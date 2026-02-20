@@ -1,0 +1,105 @@
+[
+    {
+      "category": "Home & Property Maintenance",
+      "services": [
+        {"name": "AC servicing & repair", "normal_price": 129, "member_price": 99, "icon": "Fan"},
+        {"name": "Plumbing & electrical repairs", "normal_price": 129, "member_price": 99, "icon": "HeadCircuit"},
+        {"name": "Painting & waterproofing (per room)", "normal_price": 299, "member_price": 249, "icon": "PaintBucket"},
+        {"name": "Carpentry & handyman services", "normal_price": 129, "member_price": 99, "icon": "Hammer"},
+        {"name": "Gypsum & ceiling works", "normal_price": 299, "member_price": 249, "icon": "Tools"},
+        {"name": "Curtain, blinds & wallpaper installation", "normal_price": 149, "member_price": 119, "icon": "CardsThree"},
+        {"name": "Waterproofing & sealing / Masonry & tiling", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "GridFour"}
+      ]
+    },
+    {
+      "category": "Appliances & Equipment Maintenance",
+      "services": [
+        {"name": "Appliance diagnostics (washer/fridge/oven)", "normal_price": 119, "member_price": 99, "icon": "Oven"},
+        {"name": "Water heater & pump service", "normal_price": 149, "member_price": 119, "icon": "WaterDrop"},
+        {"name": "Smart thermostat & IoT device setup", "normal_price": 199, "member_price": 169, "icon": "Broadcast"},
+        {"name": "Security system & CCTV check", "normal_price": 149, "member_price": 119, "icon": "SecurityCamera"}
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "services": [
+        {"name": "Dining chair cleaning", "normal_price": 25, "member_price": 20, "icon": "Desk"},
+        {"name": "Single armchair cleaning", "normal_price": 79, "member_price": 59, "icon": "Armchair"},
+        {"name": "3-seater sofa cleaning", "normal_price": 179, "member_price": 149, "icon": "Desk"},
+        {"name": "L-shaped sofa cleaning", "normal_price": 249, "member_price": 199, "icon": "Armchair"},
+        {"name": "Carpet cleaning (per m²)", "normal_price": 15, "member_price": 12, "icon": "GridFour"},
+        {"name": "Mattress cleaning (single)", "normal_price": 99, "member_price": 79, "icon": "Bed"},
+        {"name": "Deep cleaning (flat)", "normal_price": 299, "member_price": 249, "icon": "Home"},
+        {"name": "Kitchen/bathroom deep sanitize", "normal_price": 199, "member_price": 169, "icon": "Drop"},
+        {"name": "Water tank cleaning", "normal_price": 399, "member_price": 349, "icon": "PintGlass"},
+        {"name": "Pest control", "normal_price": 149, "member_price": 119, "icon": "BugBeetle"},
+        {"name": "Pressure washing for outdoor", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Drop"}
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "services": [
+        {"name": "Garden care & irrigation maintenance", "normal_price": 149, "member_price": 119, "icon": "PottedPlant"},
+        {"name": "Pool service (monthly)", "normal_price": 299, "member_price": 249, "icon": "SwimmingPool"},
+        {"name": "Exterior façade cleaning", "normal_price": 249, "member_price": 199, "icon": "SquaresFour"},
+        {"name": "Pest & outdoor disinfection", "normal_price": 149, "member_price": 119, "icon": "BugBeetle"},
+        {"name": "Grass cutting, trimming, planting", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Plant"},
+        {"name": "Outdoor lighting installation", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Lightbulb"}
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "services": [
+        {"name": "AMC for apartments (annual)", "normal_price": 1499, "member_price": 1299, "icon": "HouseLine"},
+        {"name": "Office maintenance & cleaning", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "BuildingApartment"},
+        {"name": "HVAC predictive servicing (per unit/month)", "normal_price": 99, "member_price": 79, "icon": "Wind"},
+        {"name": "Energy inspections", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Windmill"},
+        {"name": "Elevator & generator maintenance coordination", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Elevator"}
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "services": [
+        {"name": "IoT sensor installation", "normal_price": 199, "member_price": 169, "icon": "Broadcast"},
+        {"name": "AI predictive alerts", "normal_price": "Included in FixPro/FixMax", "member_price": "Included", "icon": "Lightbulb"},
+        {"name": "Remote diagnostics & smart reporting", "normal_price": 99, "member_price": "Free", "icon": "Suitcase"},
+        {"name": "App-based booking & monitoring", "normal_price": "Free", "member_price": "Free", "icon": "DeviceMobileSpeaker"},
+        {"name": "Automated scheduling & chat-less approvals", "normal_price": "Free", "member_price": "Free", "icon": "CalendarDots"}
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "services": [
+        {"name": "Glass & aluminum works", "normal_price": 199, "member_price": 169, "icon": "SquaresFour"},
+        {"name": "Signage & lighting installation", "normal_price": 199, "member_price": 169, "icon": "Lightbulb"},
+        {"name": "Soundproofing & insulation", "normal_price": 299, "member_price": 249, "icon": "SpeakerNone"},
+        {"name": "Emergency 24/7 call-out", "normal_price": 249, "member_price": 199, "icon": "Phone"},
+        {"name": "Vehicle parking gate automation repair", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Bus"},
+        {"name": "Renovation & refurbishment projects", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Hammer"}
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "services": [
+        {"name": "Monthly wash/detail (per ft/month)", "normal_price": 29, "member_price": 25, "icon": "Star"},
+        {"name": "Antifouling (per ft)", "normal_price": 110, "member_price": 99, "icon": "Shield"},
+        {"name": "GRP polish & repair (per ft)", "normal_price": 50, "member_price": 45, "icon": "Tools"},
+        {"name": "Captain's Care Plan (per ft/month)", "normal_price": 39, "member_price": 35, "icon": "CheckCircle"},
+        {"name": "Yacht mechanical servicing", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "Wrench"},
+        {"name": "Electrical & navigation systems servicing", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "HeadCircuit"},
+        {"name": "Water systems, pumps & pipe maintenance", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "WaterDrop"},
+        {"name": "Scheduled marina check-ups & emergency response", "normal_price": "Custom Quote", "member_price": "Custom Quote", "icon": "CalendarDots"}
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "services": [
+        {"name": "Quartz repair", "normal_price": 50, "member_price": 45, "icon": "Wrench"},
+        {"name": "Automatic service", "normal_price": 1299, "member_price": 999, "icon": "Settings"},
+        {"name": "Full Rolex service", "normal_price": 1495, "member_price": 1299, "icon": "Star"},
+        {"name": "Battery replacement", "normal_price": 250, "member_price": 199, "icon": "Tools"},
+        {"name": "Polishing (Rolex steel)", "normal_price": 950, "member_price": 799, "icon": "Star"}
+      ]
+}
+  ]
+    

@@ -1,0 +1,48 @@
+[
+  {
+    "plan": "FixLite",
+    "idealFor": "Apartments & tenants",
+    "features": [
+      "2 repair visits monthly",
+      "Priority scheduling",
+      "Essential maintenance",
+      "Basic support",
+      "Standard response time"
+    ],
+    "price": 199,
+    "period": "month",
+    "popular": false
+  },
+  {
+    "plan": "FixPro",
+    "idealFor": "Families & offices",
+    "features": [
+      "Unlimited service requests",
+      "Full AI diagnostics",
+      "Faster response time",
+      "Preventive maintenance",
+      "Dedicated support line",
+      "Priority booking"
+    ],
+    "price": 399,
+    "period": "month",
+    "popular": true
+  },
+  {
+    "plan": "FixMax",
+    "idealFor": "Villas & buildings",
+    "features": [
+      "24/7 emergency support",
+      "Full IoT integration",
+      "Emergency coverage",
+      "Predictive analytics",
+      "Personal account manager",
+      "VIP priority service",
+      "Unlimited visits"
+    ],
+    "price": 699,
+    "period": "month",
+    "popular": false
+  }
+]
+

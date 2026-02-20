@@ -1,0 +1,911 @@
+[
+    {
+      "category": "Home & Property Maintenance",
+      "name": "AC servicing & repair / AC servicing, repair, and duct cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 129,
+      "memberPrice": 99,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "AC servicing & repair",
+        "AC servicing, repair, and duct cleaning",
+        "AC servicing",
+        "repair",
+        "duct cleaning"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Plumbing & electrical repairs / Electrical repairs & rewiring / Plumbing repairs, leak fixing, and installation",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 129,
+      "memberPrice": 99,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Plumbing & electrical repairs",
+        "Electrical repairs & rewiring",
+        "Plumbing repairs, leak fixing, and installation",
+        "Plumbing",
+        "electrical repairs",
+        "rewiring",
+        "leak fixing",
+        "installation"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Painting & waterproofing (per room) / Painting (interior, exterior, decorative)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 299,
+      "memberPrice": 249,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Painting & waterproofing (per room)",
+        "Painting (interior, exterior, decorative)",
+        "Painting",
+        "waterproofing"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Carpentry & handyman services / Carpentry (doors, cabinets, flooring, furniture) / Handyman services (general fixing, hanging, assembly)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 129,
+      "memberPrice": 99,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Carpentry & handyman services",
+        "Carpentry (doors, cabinets, flooring, furniture)",
+        "Handyman services (general fixing, hanging, assembly)",
+        "Carpentry",
+        "handyman services",
+        "doors",
+        "cabinets",
+        "flooring",
+        "furniture"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Gypsum & ceiling works / Gypsum works & ceiling maintenance",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 299,
+      "memberPrice": 249,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Gypsum & ceiling works",
+        "Gypsum works & ceiling maintenance",
+        "Gypsum",
+        "ceiling works",
+        "ceiling maintenance"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Curtain, blinds & wallpaper installation / Curtain, blinds, and wallpaper installation",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Curtain, blinds & wallpaper installation",
+        "Curtain, blinds, and wallpaper installation",
+        "Curtain",
+        "blinds",
+        "wallpaper installation"
+      ]
+    },
+    {
+      "category": "Home & Property Maintenance",
+      "name": "Waterproofing & sealing / Masonry & tiling",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Waterproofing & sealing",
+        "Masonry & tiling",
+        "Waterproofing",
+        "sealing",
+        "Masonry",
+        "tiling"
+      ]
+    },
+    {
+      "category": "Appliances & Equipment Maintenance",
+      "name": "Appliance diagnostics (washer/fridge/oven) / Washing machines, dryers, dishwashers / Refrigerators, freezers, ovens, stoves",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 119,
+      "memberPrice": 99,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Appliance diagnostics (washer/fridge/oven)",
+        "Washing machines, dryers, dishwashers",
+        "Refrigerators, freezers, ovens, stoves",
+        "Appliance diagnostics",
+        "Washing machines",
+        "dryers",
+        "dishwashers",
+        "Refrigerators",
+        "freezers",
+        "ovens",
+        "stoves"
+      ]
+    },
+    {
+      "category": "Appliances & Equipment Maintenance",
+      "name": "Water heater & pump service / Water heaters, pumps, and filters",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Water heater & pump service",
+        "Water heaters, pumps, and filters",
+        "Water heater",
+        "pump service",
+        "pumps",
+        "filters"
+      ]
+    },
+    {
+      "category": "Appliances & Equipment Maintenance",
+      "name": "Smart thermostat & IoT device setup / Home automation device setup / Smart thermostats and sensor systems",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 199,
+      "memberPrice": 169,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Smart thermostat & IoT device setup",
+        "Home automation device setup",
+        "Smart thermostats and sensor systems",
+        "Smart thermostat",
+        "IoT device setup",
+        "Home automation"
+      ]
+    },
+    {
+      "category": "Appliances & Equipment Maintenance",
+      "name": "Security system & CCTV check / CCTV, intercom, and security system repair",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Security system & CCTV check",
+        "CCTV, intercom, and security system repair",
+        "Security system",
+        "CCTV",
+        "intercom",
+        "security system repair"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Dining chair cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 25,
+      "memberPrice": 20,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Dining chair cleaning",
+        "Dining chair"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Single armchair cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 79,
+      "memberPrice": 59,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Single armchair cleaning",
+        "Single armchair"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "3-seater sofa cleaning / Sofa shampooing",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 179,
+      "memberPrice": 149,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "3-seater sofa cleaning",
+        "Sofa shampooing",
+        "3-seater sofa",
+        "Sofa"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "L-shaped sofa cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 249,
+      "memberPrice": 199,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "L-shaped sofa cleaning",
+        "L-shaped sofa"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Carpet cleaning (per m²) / Carpet shampooing",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 15,
+      "memberPrice": 12,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Carpet cleaning (per m²)",
+        "Carpet shampooing",
+        "Carpet cleaning",
+        "Carpet shampooing (per m²)"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Mattress cleaning (single) / Mattress shampooing",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 99,
+      "memberPrice": 79,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Mattress cleaning (single)",
+        "Mattress shampooing",
+        "Mattress cleaning"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Deep cleaning (flat) / Deep cleaning (residential & commercial) / Post-construction & move-in cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 299,
+      "memberPrice": 249,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Deep cleaning (flat)",
+        "Deep cleaning (residential & commercial)",
+        "Post-construction & move-in cleaning",
+        "Deep cleaning",
+        "Post-construction cleaning",
+        "move-in cleaning"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Kitchen / bathroom deep clean / Kitchen & bathroom deep sanitization",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 199,
+      "memberPrice": 169,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Kitchen / bathroom deep clean",
+        "Kitchen & bathroom deep sanitization",
+        "Kitchen deep clean",
+        "bathroom deep clean",
+        "deep sanitization"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Water tank cleaning / Water tank & drainage cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 399,
+      "memberPrice": 349,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Water tank cleaning",
+        "Water tank & drainage cleaning",
+        "Water tank",
+        "drainage cleaning"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Pest control / Pest control & disinfection",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Pest control",
+        "Pest control & disinfection",
+        "disinfection"
+      ]
+    },
+    {
+      "category": "Cleaning & Hygiene Services",
+      "name": "Pressure washing for outdoor areas",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Pressure washing for outdoor areas",
+        "Pressure washing",
+        "outdoor areas"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Garden care & irrigation maintenance / Garden maintenance & irrigation systems",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Garden care & irrigation maintenance",
+        "Garden maintenance & irrigation systems",
+        "Garden care",
+        "irrigation maintenance",
+        "Garden maintenance"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Pool service (monthly) / Pool maintenance & water quality checks",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 299,
+      "memberPrice": 249,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Pool service (monthly)",
+        "Pool maintenance & water quality checks",
+        "Pool service",
+        "Pool maintenance",
+        "water quality checks"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Exterior façade cleaning",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 249,
+      "memberPrice": 199,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Exterior façade cleaning",
+        "Exterior façade"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Pest & outdoor disinfection",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 149,
+      "memberPrice": 119,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Pest & outdoor disinfection",
+        "Pest",
+        "outdoor disinfection"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Grass cutting, trimming, planting",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Grass cutting, trimming, planting",
+        "Grass cutting",
+        "trimming",
+        "planting"
+      ]
+    },
+    {
+      "category": "Outdoor & Landscaping",
+      "name": "Outdoor lighting installation",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Outdoor lighting installation",
+        "Outdoor lighting"
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "name": "AMC for apartments (annual) / Full AMC (Annual Maintenance Contracts)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 1499,
+      "memberPrice": 1299,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "AMC for apartments (annual)",
+        "Full AMC (Annual Maintenance Contracts)",
+        "AMC",
+        "Annual Maintenance Contracts"
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "name": "Office maintenance & cleaning",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Office maintenance & cleaning",
+        "Office maintenance",
+        "cleaning"
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "name": "HVAC predictive servicing (per unit/month) / HVAC system predictive servicing (AI-enabled)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 99,
+      "memberPrice": 79,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "HVAC predictive servicing (per unit/month)",
+        "HVAC system predictive servicing (AI-enabled)",
+        "HVAC predictive servicing",
+        "HVAC system",
+        "predictive servicing"
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "name": "Energy inspections / Energy efficiency inspections / Predictive asset monitoring using IoT sensors",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Energy inspections",
+        "Energy efficiency inspections",
+        "Predictive asset monitoring using IoT sensors",
+        "Energy inspections",
+        "Energy efficiency"
+      ]
+    },
+    {
+      "category": "Corporate & Facility Management",
+      "name": "Elevator & generator maintenance coordination",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Elevator & generator maintenance coordination",
+        "Elevator maintenance",
+        "generator maintenance"
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "name": "IoT sensor installation / IoT device installation & calibration",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 199,
+      "memberPrice": 169,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "IoT sensor installation",
+        "IoT device installation & calibration",
+        "IoT sensor installation",
+        "IoT device installation",
+        "calibration"
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "name": "AI predictive alerts / Predictive maintenance alerts via FixNex AI",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Included in FixPro/FixMax",
+      "memberPriceText": "Included",
+      "keywords": [
+        "AI predictive alerts",
+        "Predictive maintenance alerts via FixNex AI",
+        "AI predictive alerts",
+        "Predictive maintenance"
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "name": "Remote diagnostics & smart reporting / Remote diagnostics & digital service reports",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 99,
+      "memberPrice": null,
+      "normalPriceText": null,
+      "memberPriceText": "Free",
+      "keywords": [
+        "Remote diagnostics & smart reporting",
+        "Remote diagnostics & digital service reports",
+        "Remote diagnostics",
+        "smart reporting",
+        "digital service reports"
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "name": "App-based booking & monitoring / App-based booking and issue tracking",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Free",
+      "memberPriceText": "Free",
+      "keywords": [
+        "App-based booking & monitoring",
+        "App-based booking and issue tracking",
+        "App-based booking",
+        "monitoring",
+        "issue tracking"
+      ]
+    },
+    {
+      "category": "Smart Technology & AI Integration",
+      "name": "Automated scheduling & chat-less approvals",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Free",
+      "memberPriceText": "Free",
+      "keywords": [
+        "Automated scheduling & chat-less approvals",
+        "Automated scheduling",
+        "chat-less approvals"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Glass & aluminum works",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 199,
+      "memberPrice": 169,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Glass & aluminum works",
+        "Glass works",
+        "aluminum works"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Signage & lighting installation",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 199,
+      "memberPrice": 169,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Signage & lighting installation",
+        "Signage installation",
+        "lighting installation"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Soundproofing & insulation",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 299,
+      "memberPrice": 249,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Soundproofing & insulation",
+        "Soundproofing",
+        "insulation"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Emergency 24/7 call-out",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 249,
+      "memberPrice": 199,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Emergency 24/7 call-out",
+        "Emergency call-out",
+        "24/7 call-out"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Vehicle parking gate automation repair",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Vehicle parking gate automation repair",
+        "parking gate automation repair",
+        "Vehicle parking gate"
+      ]
+    },
+    {
+      "category": "Specialty & On-Demand Services",
+      "name": "Renovation & refurbishment projects",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Renovation & refurbishment projects",
+        "Renovation",
+        "refurbishment projects"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Monthly wash/detail (per ft/month)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 29,
+      "memberPrice": 25,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Monthly wash/detail (per ft/month)",
+        "Monthly wash",
+        "detail (per ft/month)"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Antifouling (per ft)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 110,
+      "memberPrice": 99,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Antifouling (per ft)",
+        "Antifouling"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "GRP polish & repair (per ft)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 50,
+      "memberPrice": 45,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "GRP polish & repair (per ft)",
+        "GRP polish",
+        "repair (per ft)"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Captain’s Care Plan (per ft/month)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 39,
+      "memberPrice": 35,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Captain’s Care Plan (per ft/month)",
+        "Captain’s Care Plan"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Yacht mechanical servicing (engines, generators, hydraulics)",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Yacht mechanical servicing (engines, generators, hydraulics)",
+        "Yacht mechanical servicing",
+        "engines",
+        "generators",
+        "hydraulics"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Electrical & navigation systems servicing",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Electrical & navigation systems servicing",
+        "Electrical systems servicing",
+        "navigation systems servicing"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Water systems, pumps & pipe maintenance",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Water systems, pumps & pipe maintenance",
+        "Water systems",
+        "pumps",
+        "pipe maintenance"
+      ]
+    },
+    {
+      "category": "VIP Yacht Maintenance & Management",
+      "name": "Scheduled marina check-ups & emergency response",
+      "currency": "AED",
+      "customQuote": true,
+      "normalPrice": null,
+      "memberPrice": null,
+      "normalPriceText": "Custom Quote",
+      "memberPriceText": "Custom Quote",
+      "keywords": [
+        "Scheduled marina check-ups & emergency response",
+        "Scheduled marina check-ups",
+        "emergency response"
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "name": "Quartz repair",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 50,
+      "memberPrice": 45,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Quartz repair",
+        "Quartz"
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "name": "Automatic service",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 1299,
+      "memberPrice": 999,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Automatic service"
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "name": "Full Rolex service",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 1495,
+      "memberPrice": 1299,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Full Rolex service",
+        "Rolex"
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "name": "Battery replacement",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 250,
+      "memberPrice": 199,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Battery replacement"
+      ]
+    },
+    {
+      "category": "Luxury Watch Care",
+      "name": "Polishing (Rolex steel)",
+      "currency": "AED",
+      "customQuote": false,
+      "normalPrice": 950,
+      "memberPrice": 799,
+      "normalPriceText": null,
+      "memberPriceText": null,
+      "keywords": [
+        "Polishing (Rolex steel)",
+        "Polishing",
+        "Rolex steel"
+      ]
+    }
+  ]
+  

@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@keyframes fadeInOut1 {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 1; }
+}
+
+@keyframes fadeInOut2 {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes morphAmoeba {
+  0%, 100% {
+    clip-path: polygon(30% 0%, 70% 0%, 100% 20%, 100% 50%, 90% 70%, 70% 90%, 50% 100%, 30% 90%, 10% 70%, 0% 50%, 0% 20%);
+  }
+  25% {
+    clip-path: polygon(25% 5%, 75% 0%, 95% 25%, 100% 55%, 85% 75%, 65% 85%, 45% 95%, 25% 85%, 15% 65%, 5% 45%, 5% 15%);
+  }
+  50% {
+    clip-path: polygon(35% 0%, 65% 5%, 100% 15%, 95% 45%, 95% 65%, 75% 95%, 55% 100%, 35% 90%, 5% 75%, 0% 55%, 0% 25%);
+  }
+  75% {
+    clip-path: polygon(20% 10%, 80% 0%, 100% 30%, 100% 60%, 80% 80%, 60% 90%, 40% 95%, 20% 80%, 10% 60%, 0% 40%, 0% 10%);
+  }
+}
+
+/* About Us Page Background Animations */
+@keyframes floatOrb1 {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px) scale(1);
+  }
+  33% {
+    transform: translate(-50%, -50%) translateY(-30px) translateX(20px) scale(1.1);
+  }
+  66% {
+    transform: translate(-50%, -50%) translateY(30px) translateX(-20px) scale(0.9);
+  }
+}
+
+@keyframes floatOrb2 {
+  0%, 100% {
+    transform: translate(50%, -50%) translateY(0px) scale(1);
+  }
+  50% {
+    transform: translate(50%, -50%) translateY(-40px) translateX(-30px) scale(1.15);
+  }
+}
+
+@keyframes floatOrb3 {
+  0%, 100% {
+    transform: translate(-50%, 50%) translateY(0px) scale(1);
+  }
+  50% {
+    transform: translate(-50%, 50%) translateY(40px) translateX(40px) scale(1.1);
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(80px, 80px);
+  }
+}
+
+@keyframes floatParticle0 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(50px, -80px) scale(1.5); opacity: 0.5; }
+}
+
+@keyframes floatParticle1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-60px, 70px) scale(1.3); opacity: 0.4; }
+}
+
+@keyframes floatParticle2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(70px, 60px) scale(1.4); opacity: 0.5; }
+}
+
+@keyframes floatParticle3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-50px, -70px) scale(1.2); opacity: 0.4; }
+}
+
+@keyframes floatParticle4 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(80px, -50px) scale(1.6); opacity: 0.5; }
+}
+
+@keyframes floatParticle5 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-70px, 80px) scale(1.3); opacity: 0.4; }
+}
+
+@keyframes floatParticle6 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(60px, 70px) scale(1.4); opacity: 0.5; }
+}
+
+@keyframes floatParticle7 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-80px, -60px) scale(1.2); opacity: 0.4; }
+}
+
+@keyframes floatParticle8 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(50px, -90px) scale(1.5); opacity: 0.5; }
+}
+
+@keyframes floatParticle9 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-60px, 90px) scale(1.3); opacity: 0.4; }
+}
+
+@keyframes floatParticle10 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(90px, 50px) scale(1.6); opacity: 0.5; }
+}
+
+@keyframes floatParticle11 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+  50% { transform: translate(-90px, -50px) scale(1.2); opacity: 0.4; }
+}
+
+@keyframes waveAnimation {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-20px) scaleY(1.2);
+    opacity: 0.25;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+/* Use Space Grotesk for headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), var(--font-sans), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}

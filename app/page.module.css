@@ -1,0 +1,226 @@
+.heroAnimate {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0) scale(0.97);
+  -webkit-transform: translate3d(0, 28px, 0) scale(0.97);
+  /* Safari: Remove filter blur to prevent crashes - use opacity fade instead */
+  animation:
+    heroFadeUp 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    heroFloat 14s ease-in-out 1.5s infinite alternate;
+  -webkit-animation:
+    heroFadeUp 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    heroFloat 14s ease-in-out 1.5s infinite alternate;
+  /* Safari: Limit will-change to prevent performance issues */
+  will-change: transform, opacity;
+  /* Safari: Remove content-visibility and contain (limited support) */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.delay1 {
+  animation-delay: 0.6s;
+}
+
+.delay2 {
+  animation-delay: 0.9s;
+}
+
+.delay3 {
+  animation-delay: 1.2s;
+}
+
+.heroCta {
+  position: relative;
+  isolation: isolate;
+}
+
+.heroCta::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.25), transparent 60%);
+  opacity: 0;
+  transform: scale(0.8);
+  -webkit-transform: scale(0.8);
+  /* Safari: Reduce blur intensity to prevent crashes */
+  filter: blur(20px);
+  -webkit-filter: blur(20px);
+  z-index: -1;
+  animation: heroAura 1.2s ease-out forwards 0.65s;
+  -webkit-animation: heroAura 1.2s ease-out forwards 0.65s;
+  /* Safari: Add hardware acceleration */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.heroCta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(96, 165, 250, 0.3) 45%, transparent 70%);
+  opacity: 0;
+  transform: translateX(-60%) skewX(-12deg);
+  pointer-events: none;
+  z-index: -1;
+  animation: heroStroke 1.2s ease-out forwards 0.7s;
+}
+
+/* Final state classes - no animation, instant display */
+.heroAnimateComplete {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  -webkit-transform: translate3d(0, 0, 0) scale(1);
+  animation: heroFloat 14s ease-in-out 1.5s infinite alternate;
+  -webkit-animation: heroFloat 14s ease-in-out 1.5s infinite alternate;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.heroCtaComplete {
+  position: relative;
+  isolation: isolate;
+}
+
+.heroCtaComplete::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.25), transparent 60%);
+  opacity: 1;
+  transform: scale(1);
+  -webkit-transform: scale(1);
+  /* Safari: Reduce blur intensity */
+  filter: blur(20px);
+  -webkit-filter: blur(20px);
+  z-index: -1;
+  animation: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.heroCtaComplete::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(96, 165, 250, 0.3) 45%, transparent 70%);
+  opacity: 0;
+  transform: translateX(60%) skewX(-2deg);
+  pointer-events: none;
+  z-index: -1;
+  animation: none;
+}
+
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.97);
+    -webkit-transform: translate3d(0, 28px, 0) scale(0.97);
+    /* Safari: Remove filter blur */
+  }
+  60% {
+    opacity: 1;
+    transform: translate3d(0, -4px, 0) scale(1.01);
+    -webkit-transform: translate3d(0, -4px, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@-webkit-keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 28px, 0) scale(0.97);
+  }
+  60% {
+    opacity: 1;
+    -webkit-transform: translate3d(0, -4px, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes heroFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(0, 4px, 0) scale(0.997);
+    -webkit-transform: translate3d(0, 4px, 0) scale(0.997);
+  }
+}
+
+@-webkit-keyframes heroFloat {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    -webkit-transform: translate3d(0, 4px, 0) scale(0.997);
+  }
+}
+
+@keyframes heroAura {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    -webkit-transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    -webkit-transform: scale(1);
+  }
+}
+
+@-webkit-keyframes heroAura {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+  }
+}
+
+@keyframes heroStroke {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%) skewX(-12deg);
+    -webkit-transform: translateX(-60%) skewX(-12deg);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(0) skewX(-6deg);
+    -webkit-transform: translateX(0) skewX(-6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(60%) skewX(-2deg);
+    -webkit-transform: translateX(60%) skewX(-2deg);
+  }
+}
+
+@-webkit-keyframes heroStroke {
+  0% {
+    opacity: 0;
+    -webkit-transform: translateX(-60%) skewX(-12deg);
+  }
+  40% {
+    opacity: 1;
+    -webkit-transform: translateX(0) skewX(-6deg);
+  }
+  100% {
+    opacity: 0;
+    -webkit-transform: translateX(60%) skewX(-2deg);
+  }
+}

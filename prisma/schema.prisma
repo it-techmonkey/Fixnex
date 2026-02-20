@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  fullName         String
+  countryCode      String?           @db.VarChar(8)
+  phoneNumber      String?           @db.VarChar(20)
+  role             UserRole          @default(USER)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  bookings         Booking[]
+  cart             Cart?
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model Service {
+  id               String            @id @default(cuid())
+  name             String
+  normal_price     String
+  member_price     String
+  icon             String
+  category_id      String
+  category         ServiceCategory   @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+  carts            Cart[]
+  bookingCartItems BookingCartItem[]
+
+  @@unique([name, category_id])
+  @@map("services")
+}
+
+model ServiceCategory {
+  id         String    @id @default(cuid())
+  name       String    @unique
+  services   Service[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("service_categories")
+}
+
+model Booking {
+  id             String    @id @default(cuid())
+  bookingCartItems BookingCartItem[]
+  user_id        String?
+  user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  category_name  String?
+  location       String?
+  service_type   String?
+  scheduled_date DateTime?
+  time_slot      String?
+  price          String?
+  status         BookingStatus @default(PENDING)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@index([user_id])
+  @@map("bookings")
+}
+
+model Cart {
+  id         String    @id @default(cuid())
+  services   Service[]
+  user_id    String    @unique
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  bookingCartItems BookingCartItem[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  @@map("carts")
+}
+
+model BookingCartItem {
+  id             String    @id @default(cuid())
+  services       Service   @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  service_id     String
+  cart_id        String
+  cart           Cart      @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+  category_name  String?
+  location       String?
+  service_type   String?
+  scheduled_date DateTime?
+  time_slot      String?
+  price          String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  booking        Booking?  @relation(fields: [booking_id], references: [id], onDelete: Cascade)
+  booking_id     String?
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
