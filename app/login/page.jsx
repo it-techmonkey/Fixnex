@@ -44,9 +44,7 @@ const LoginForm = () => {
       // Get redirect URL from query parameter, default to home page
       const redirectUrl = searchParams.get("redirect") || "/";
       
-      alert("Login successful! Redirecting...");
       router.push(redirectUrl);
-      router.refresh();
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");
