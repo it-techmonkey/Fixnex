@@ -7,8 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:bookings": "node scripts/seed-bookings.js",
-    "postinstall": "prisma generate"
+    "seed:bookings": "node scripts/seed-bookings.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
