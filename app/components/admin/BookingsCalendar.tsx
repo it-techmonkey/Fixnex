@@ -189,44 +189,44 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
   });
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 shadow-lg h-full">
+    <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 shadow-lg sm:p-5 lg:p-6">
       {/* Header with Month/Year */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-white">Bookings</h2>
-          <p className="mt-1 text-sm sm:text-base font-medium text-sky-400 capitalize">
+      <div className="mb-3 flex shrink-0 flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between lg:mb-5">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold text-white sm:text-lg lg:text-xl">Bookings</h2>
+          <p className="mt-1 truncate text-sm font-medium capitalize text-sky-400 sm:text-base">
             {monthYearLabel}
           </p>
         </div>
         <button
           type="button"
           onClick={goToToday}
-          className="self-start sm:self-auto rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-sky-500 hover:text-sky-300"
+          className="min-h-[40px] shrink-0 self-start rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-sky-500 hover:bg-slate-800/80 hover:text-sky-300 sm:self-auto sm:py-1.5"
         >
           Today
         </button>
       </div>
 
       {/* Selected Date Info */}
-      <div className="mb-4 sm:mb-6 px-2">
-        <p className="text-xs sm:text-sm text-slate-400">
-          Selected: <span className="font-medium text-slate-300 capitalize">{selectedDateLabel}</span>
+      <div className="mb-3 shrink-0 px-1 sm:mb-4 lg:mb-5">
+        <p className="truncate text-xs text-slate-400 sm:text-sm">
+          Selected: <span className="font-medium capitalize text-slate-300">{selectedDateLabel}</span>
         </p>
       </div>
 
       {/* Date Navigation Tabs */}
-      <div className="mb-4 sm:mb-6 flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+      <div className="mb-3 flex shrink-0 items-center gap-1.5 overflow-x-auto pb-2 sm:mb-4 sm:gap-2 lg:mb-5 [-webkit-overflow-scrolling:touch]">
         <button
           type="button"
           onClick={() => navigateDates('prev')}
           disabled={loadingCalendar}
-          className="flex shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 p-1.5 sm:p-2 text-slate-300 transition hover:border-sky-500 hover:text-sky-300 disabled:opacity-50"
+          className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-900/80 text-slate-300 transition-colors hover:border-sky-500 hover:text-sky-300 disabled:opacity-50 sm:size-9 sm:p-2"
           aria-label="Previous week"
         >
           <ChevronLeftIcon className="size-4 sm:size-5" />
         </button>
 
-        <div className="flex flex-1 gap-1.5 sm:gap-2 overflow-x-auto min-w-0">
+        <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto sm:gap-2">
           {dateTabs.map((date) => {
             const isSelected = date.toDateString() === selectedDate.toDateString();
             const isToday = date.toDateString() === new Date().toDateString();
@@ -249,33 +249,25 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
                 key={date.toISOString()}
                 type="button"
                 onClick={() => setSelectedDate(date)}
-                className={`shrink-0 rounded-lg border px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition min-w-14 sm:min-w-16 ${
+                className={`flex min-w-[56px] shrink-0 flex-col items-center justify-center rounded-lg border px-2 py-2.5 text-xs font-medium transition-colors sm:min-w-[64px] sm:px-4 sm:py-2.5 sm:text-sm ${
                   isSelected
-                    ? "border-sky-500 bg-sky-500/20 text-white shadow-lg shadow-sky-500/20"
+                    ? "border-sky-500 bg-sky-500/20 text-white shadow-md shadow-sky-500/20"
                     : isToday
                     ? "border-sky-400/50 bg-slate-900/80 text-slate-200"
                     : "border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-600"
                 }`}
               >
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className={`text-[10px] sm:text-xs ${
-                    isSelected ? "text-sky-300" : "text-slate-400"
-                  }`}>
-                    {date.toLocaleDateString("en-GB", { weekday: "short" })}
+                <span className={`text-[10px] sm:text-xs ${isSelected ? "text-sky-300" : "text-slate-400"}`}>
+                  {date.toLocaleDateString("en-GB", { weekday: "short" })}
+                </span>
+                <span className={`mt-0.5 text-sm sm:text-base ${isToday && !isSelected ? "text-sky-400" : ""}`}>
+                  {date.getDate()}
+                </span>
+                {bookingCount > 0 && (
+                  <span className={`mt-0.5 text-[10px] font-semibold sm:text-xs ${isSelected ? "text-sky-300" : "text-sky-400"}`}>
+                    {bookingCount}
                   </span>
-                  <span className={`text-sm sm:text-base ${
-                    isToday && !isSelected ? "text-sky-400" : ""
-                  }`}>
-                    {date.getDate()}
-                  </span>
-                  {bookingCount > 0 && (
-                    <span className={`text-[10px] sm:text-xs font-semibold ${
-                      isSelected ? "text-sky-300" : "text-sky-400"
-                    }`}>
-                      {bookingCount}
-                    </span>
-                  )}
-                </div>
+                )}
               </button>
             );
           })}
@@ -285,7 +277,7 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
           type="button"
           onClick={() => navigateDates('next')}
           disabled={loadingCalendar}
-          className="flex shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 p-1.5 sm:p-2 text-slate-300 transition hover:border-sky-500 hover:text-sky-300 disabled:opacity-50"
+          className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-900/80 text-slate-300 transition-colors hover:border-sky-500 hover:text-sky-300 disabled:opacity-50 sm:size-9 sm:p-2"
           aria-label="Next week"
         >
           <ChevronRightIcon className="size-4 sm:size-5" />
@@ -293,10 +285,10 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
       </div>
 
       {/* Bookings List */}
-      <div className="space-y-0 divide-y divide-slate-800/50 rounded-lg border border-slate-800 bg-slate-950/40">
+      <div className="min-h-[100px] max-h-[280px] min-w-0 flex-1 space-y-0 divide-y divide-slate-800/50 overflow-y-auto overflow-x-hidden rounded-xl border border-slate-800/80 bg-slate-950/40 sm:max-h-[320px] lg:max-h-[360px]">
         {loadingCalendar ? (
           Array.from({ length: 5 }).map((_, index) => (
-            <div key={`skeleton-${index}`} className="animate-pulse p-3 sm:p-4">
+            <div key={`skeleton-${index}`} className="p-3 sm:p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="space-y-2 flex-1">
                   <div className="h-4 w-32 sm:w-40 rounded bg-slate-800/60" />
@@ -330,7 +322,7 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
                   return (
                     <div
                       key={`${booking.id}-${item.id}-${itemIndex}`}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 transition hover:bg-slate-900/40"
+                      className="flex min-h-[52px] flex-col justify-center gap-1 p-3 transition-colors hover:bg-slate-900/40 sm:min-h-0 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:p-4"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm sm:text-base text-white truncate">{serviceName}</p>
@@ -358,7 +350,7 @@ const BookingsCalendar = ({ isAuthorized }: BookingsCalendarProps) => {
               return [
                 <div
                   key={booking.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 sm:p-4 transition hover:bg-slate-900/40"
+                  className="flex min-h-[52px] flex-col justify-center gap-1 p-3 transition-colors hover:bg-slate-900/40 sm:min-h-0 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:p-4"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm sm:text-base text-white truncate">{serviceName}</p>

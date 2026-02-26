@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { AdminService } from "./admin.services";
 
 export class AdminController {
   constructor(private readonly service = new AdminService()) {}
 
-  async dashboard(_request: NextRequest) {
+  async dashboard(request: NextRequest) {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
     try {
       const payload = await this.service.getDashboardMetrics();
       return NextResponse.json(payload, { status: 200 });
@@ -36,6 +39,8 @@ export class AdminController {
   }
 
   async trendingServices(request: NextRequest) {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
     try {
       const { searchParams } = new URL(request.url);
       const period = (searchParams.get('period') as 'day' | 'week' | 'month' | 'year') || 'month';

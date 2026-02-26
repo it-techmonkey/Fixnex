@@ -47,10 +47,11 @@ export class AuthController {
         return NextResponse.json({ message: error.message }, { status: error.status });
       }
       console.error("Login error:", error);
-      return NextResponse.json(
-        { message: "Unable to log in right now. Please try again later." },
-        { status: 500 }
-      );
+      const msg =
+        error instanceof Error && error.message.includes("JWT_SECRET")
+          ? "Server configuration error: JWT_SECRET is not set. Add it in Vercel (or your host) Environment Variables."
+          : "Unable to log in right now. Please try again later.";
+      return NextResponse.json({ message: msg }, { status: 500 });
     }
   }
 

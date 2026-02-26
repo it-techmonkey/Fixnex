@@ -1,7 +1,8 @@
 'use client';
 
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { AdminLayout } from "@/app/components/admin/AdminLayout";
 import { fetchWithCache, removeCachedData } from "@/app/utils/cache";
 
 type BookingUser = {
@@ -102,7 +103,6 @@ const defaultFilters: FiltersState = {
 };
 
 const AdminPageContent = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FiltersState>(defaultFilters);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -117,9 +117,6 @@ const AdminPageContent = () => {
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   // Initialize filters from URL parameters on mount
   useEffect(() => {
@@ -161,52 +158,6 @@ const AdminPageContent = () => {
       }
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const verifyAdminAccess = async () => {
-      setCheckingAuth(true);
-      setAuthError(null);
-
-      try {
-        const response = await fetch("/api/auth/session", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error("You must be signed in to access this page.");
-        }
-
-        const data = await response.json();
-        const role = data?.user?.role;
-
-        if (role !== "ADMIN") {
-          throw new Error("Only administrators can access this page.");
-        }
-
-        setIsAuthorized(true);
-      } catch (err) {
-        setIsAuthorized(false);
-        setAuthError((err as Error).message ?? "Access denied.");
-      } finally {
-        if (isMounted) {
-          setCheckingAuth(false);
-        }
-      }
-    };
-
-    verifyAdminAccess();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -292,11 +243,8 @@ const AdminPageContent = () => {
   }, [filters.page, filters.pageSize, queryString]);
 
   useEffect(() => {
-    if (!isAuthorized) {
-      return;
-    }
     fetchBookings();
-  }, [fetchBookings, isAuthorized]);
+  }, [fetchBookings]);
 
   const handleFilterChange = <K extends keyof FiltersState>(
     key: K,
@@ -582,114 +530,35 @@ const AdminPageContent = () => {
   const canGoPrev = filters.page > 1 && !loading;
   const canGoNext = filters.page < (pagination.totalPages || 1) && !loading;
 
-  if (checkingAuth) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <span className="text-sm uppercase tracking-[0.3em] text-slate-500">Verifying</span>
-          <p className="text-lg font-semibold text-white">Checking admin permissions…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100 px-4">
-        <div className="max-w-md rounded-2xl border border-rose-500/40 bg-rose-500/10 p-8 text-center shadow-lg">
-          <p className="text-2xl font-semibold text-white">Access denied</p>
-          <p className="mt-3 text-sm text-rose-100">
-            {authError ?? "You do not have permission to view this page."}
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-100/10 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-100/20"
-          >
-            Go to homepage
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center text-lg font-semibold tracking-tight text-white">
-              <span className="mr-2 inline-flex size-9 items-center justify-center rounded-full bg-linear-to-br from-sky-400 to-sky-600 text-base font-semibold text-slate-950 shadow-lg">
-                fx
-              </span>
-              fix<span className="text-sky-400">nex</span> Admin
-            </span>
+    <AdminLayout title="Bookings" currentNav="bookings">
+      <div className="mx-auto max-w-7xl flex flex-col gap-6 overflow-hidden sm:gap-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="text-xl font-semibold text-white sm:text-2xl md:text-3xl">Bookings</h2>
+            <p className="mt-1 truncate text-sm text-slate-400">{formattedSummary}</p>
           </div>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => router.push("/admin-dashboard")}
-              className="inline-flex items-center justify-center rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs sm:text-sm font-semibold text-slate-200 shadow-lg transition hover:border-sky-500 hover:text-sky-300 sm:px-4"
-            >
-              <span className="hidden sm:inline">Dashboard</span>
-              <span className="sm:hidden">Dash</span>
-            </button>
-            {/* <button
-              type="button"
-              className="relative flex size-10 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-200 transition hover:border-sky-500 hover:text-sky-300"
-              aria-label="Notifications"
-            >
-              <BellIcon className="size-5" />
-              <span className="absolute -right-0.5 -top-0.5 inline-flex size-2 rounded-full bg-sky-400 shadow" />
-            </button> */}
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-linear-to-br from-sky-500 to-indigo-500 text-sm font-semibold text-slate-950">
-                AD
-              </div>
-              <div className="text-left text-sm leading-tight">
-                <p className="font-medium text-white">Admin</p>
-                <p className="text-xs text-slate-400">Bookings</p>
-              </div>
-              <button
-                type="button"
-                className="flex size-9 items-center justify-center rounded-full border border-slate-800 bg-slate-900 text-slate-200 transition hover:border-sky-500 hover:text-sky-300"
-                aria-label="Open profile menu"
-              >
-                <CaretDownIcon className="size-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 overflow-hidden px-4 py-6 sm:px-6 sm:py-10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-              Bookings
-            </h1>
-            <p className="mt-1 text-sm text-slate-300">{formattedSummary}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
-            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2">
-              <CalendarIcon className="size-4 text-sky-400" />
-              <span>{selectedDateLabel}</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-300">
+              <CalendarIcon className="size-4 shrink-0 text-sky-400" />
+              <span className="truncate">{selectedDateLabel}</span>
             </div>
             <button
+              type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2 font-medium text-slate-200 transition hover:border-sky-500 hover:text-sky-300"
+              className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-sky-500 hover:bg-slate-800/80 hover:text-sky-300"
             >
-              <RefreshIcon className="size-4 text-slate-300" />
+              <RefreshIcon className="size-4 shrink-0 text-slate-400" />
               Reset
             </button>
           </div>
         </div>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-lg backdrop-blur overflow-hidden transition-all duration-300">
+        <section className="rounded-2xl border border-slate-800/80 bg-slate-900/50 shadow-lg overflow-hidden transition-all duration-300">
           <button
+            type="button"
             onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-            className="w-full flex items-center justify-between p-6 text-left transition hover:bg-slate-900/40"
+            className="flex w-full items-center justify-between p-4 text-left transition hover:bg-slate-900/40 sm:p-5 lg:p-6"
           >
             <div className="flex items-center gap-3">
               <FilterIcon className="size-5 text-sky-400" />
@@ -723,8 +592,8 @@ const AdminPageContent = () => {
               isFiltersExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="px-6 pb-6 space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-6 px-4 pb-4 sm:px-5 sm:pb-5 lg:px-6 lg:pb-6">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <FilterSearch
                   label="Global search"
                   placeholder="Search in all fields"
@@ -784,7 +653,7 @@ const AdminPageContent = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <DateInput
                   label="Specific date"
                   value={filters.date}
@@ -873,8 +742,8 @@ const AdminPageContent = () => {
             </div>
           )}
 
-          <div className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/40 shadow-xl overflow-hidden">
-            <div className="overflow-x-auto -mx-px">
+          <div className="flex flex-col rounded-2xl border border-slate-800/80 bg-slate-900/50 shadow-xl overflow-hidden">
+            <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
               <table className="min-w-full divide-y divide-slate-800 text-sm">
                 <thead className="bg-slate-900/80 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
                   <tr>
@@ -1005,7 +874,7 @@ const AdminPageContent = () => {
             </div>
           </div>
         </section>
-      </main>
+      </div>
 
       {isEditModalOpen && editingBooking && (
         <EditBookingModal
@@ -1019,7 +888,7 @@ const AdminPageContent = () => {
           formatCurrency={formatCurrency}
         />
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

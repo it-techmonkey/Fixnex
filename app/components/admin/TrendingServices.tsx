@@ -96,27 +96,27 @@ const TrendingServices = ({ isAuthorized }: TrendingServicesProps) => {
   ];
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 shadow-lg">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/50 p-4 shadow-lg sm:p-5 lg:p-6">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold text-white">Trending Services</h2>
+      <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between lg:mb-6">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base font-semibold text-white sm:text-lg lg:text-xl">Trending Services</h2>
           {data && (
-            <p className="mt-1 text-xs sm:text-sm text-slate-400">
-              {formatDate(data.startDate)} - {formatDate(data.endDate)}
+            <p className="mt-1 truncate text-xs text-slate-400 sm:text-sm">
+              {formatDate(data.startDate)} – {formatDate(data.endDate)}
             </p>
           )}
         </div>
 
         {/* Period Filter */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex shrink-0 flex-wrap gap-2">
           {periodOptions.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => setPeriod(option.value)}
               disabled={loading}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
+              className={`min-h-[36px] rounded-lg border px-3 py-2 text-xs font-semibold transition-colors sm:min-h-[32px] sm:py-1.5 ${
                 period === option.value
                   ? "border-sky-500 bg-sky-500/20 text-sky-300"
                   : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"
@@ -130,65 +130,72 @@ const TrendingServices = ({ isAuthorized }: TrendingServicesProps) => {
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, index) => (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={`skeleton-${index}`}
-              className="animate-pulse rounded-lg border border-slate-800 bg-slate-900/50 p-4"
+              className="rounded-lg border border-slate-800/80 bg-slate-900/50 p-3 sm:p-4"
             >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-slate-800/60" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 rounded bg-slate-800/60" />
-                  <div className="h-3 w-1/2 rounded bg-slate-800/60" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-800/60 sm:h-12 sm:w-12" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-4 w-3/4 max-w-[200px] rounded bg-slate-800/60" />
+                  <div className="h-3 w-1/2 max-w-[120px] rounded bg-slate-800/60" />
                 </div>
-                <div className="h-6 w-16 rounded bg-slate-800/60" />
+                <div className="h-6 w-14 shrink-0 rounded bg-slate-800/60" />
               </div>
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 p-4 text-center">
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-center sm:p-5">
           <p className="text-sm text-rose-100">{error}</p>
           <button
             type="button"
             onClick={() => fetchTrendingServices(period)}
-            className="mt-3 rounded-lg border border-rose-200/30 px-3 py-1.5 text-xs font-semibold text-rose-50 transition hover:border-rose-50 hover:text-white"
+            className="mt-3 min-h-[40px] rounded-lg border border-rose-200/30 px-4 py-2 text-xs font-semibold text-rose-50 transition-colors hover:border-rose-50 hover:bg-rose-500/20 hover:text-white"
           >
             Retry
           </button>
         </div>
       ) : !data || data.trendingServices.length === 0 ? (
-        <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-8 text-center">
+        <div className="rounded-xl border border-slate-800/80 bg-slate-900/50 p-6 text-center sm:p-8">
           <p className="text-sm text-slate-400">No trending services found for this period</p>
         </div>
       ) : (
-        <div className="w-full">
-          <ResponsiveContainer width="100%" height={500}>
+        <div className="min-w-0 w-full overflow-hidden">
+          <div className="h-[220px] w-full min-h-0 overflow-hidden sm:h-[280px] lg:h-[340px] xl:h-[380px]">
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={data.trendingServices.slice(0, 10).map((service, index) => ({
-                name: service.serviceName.length > 15 ? `${service.serviceName.substring(0, 15)}...` : service.serviceName,
-                fullName: service.serviceName,
-                category: service.categoryName,
-                bookings: service.bookingCount,
-                uniqueBookings: service.uniqueBookingCount,
-                rank: index + 1,
-              }))}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              data={data.trendingServices.slice(0, 10).map((service, index) => {
+                const name = service.serviceName;
+                const shortName = name.length > 12 ? `${name.slice(0, 12)}…` : name;
+                return {
+                  name: shortName,
+                  fullName: service.serviceName,
+                  category: service.categoryName,
+                  bookings: service.bookingCount,
+                  uniqueBookings: service.uniqueBookingCount,
+                  rank: index + 1,
+                };
+              })}
+              margin={{ top: 8, right: 8, left: -8, bottom: 40 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis
                 dataKey="name"
                 angle={-45}
                 textAnchor="end"
-                height={100}
+                height={72}
                 stroke="#94a3b8"
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                interval={0}
               />
               <YAxis
+                width={28}
                 stroke="#94a3b8"
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
-                label={{ value: 'Bookings', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }}
+                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                label={{ value: 'Bookings', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 10 }}
               />
               <Tooltip
                 contentStyle={{
@@ -238,30 +245,29 @@ const TrendingServices = ({ isAuthorized }: TrendingServicesProps) => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </div>
 
           {/* Top 3 Badges */}
           {data.trendingServices.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <div className="mt-3 flex flex-wrap justify-center gap-2 sm:mt-4 sm:gap-3 lg:mt-5">
               {data.trendingServices.slice(0, 3).map((service, index) => {
                 const blueShades = [
-                  { border: "border-sky-400/50", bg: "bg-sky-400/10", badge: "bg-sky-500" }, // Light blue
-                  { border: "border-blue-500/50", bg: "bg-blue-500/10", badge: "bg-blue-600" }, // Medium blue
-                  { border: "border-blue-700/50", bg: "bg-blue-700/10", badge: "bg-blue-800" }, // Dark blue
+                  { border: "border-sky-400/50", bg: "bg-sky-400/10", badge: "bg-sky-500" },
+                  { border: "border-blue-500/50", bg: "bg-blue-500/10", badge: "bg-blue-600" },
+                  { border: "border-blue-700/50", bg: "bg-blue-700/10", badge: "bg-blue-800" },
                 ];
                 const shade = blueShades[index] || blueShades[0];
                 return (
                   <div
                     key={service.serviceId}
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${shade.border} ${shade.bg}`}
+                    className={`flex min-w-0 max-w-full items-center gap-2 rounded-lg border px-2 py-1.5 sm:px-3 sm:py-2 ${shade.border} ${shade.bg}`}
                   >
-                    <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-full font-bold text-xs text-white ${shade.badge}`}
-                    >
+                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-bold text-[10px] text-white sm:h-6 sm:w-6 sm:text-xs ${shade.badge}`}>
                       {index + 1}
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-white">{service.serviceName}</p>
-                      <p className="text-xs text-slate-400">{service.bookingCount} bookings</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-white">{service.serviceName}</p>
+                      <p className="text-[10px] text-slate-400 sm:text-xs">{service.bookingCount} bookings</p>
                     </div>
                   </div>
                 );
@@ -273,8 +279,8 @@ const TrendingServices = ({ isAuthorized }: TrendingServicesProps) => {
 
       {/* Summary */}
       {data && data.trendingServices.length > 0 && (
-        <div className="mt-6 rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-          <p className="text-xs text-slate-400">
+        <div className="mt-4 rounded-xl border border-slate-800/80 bg-slate-950/40 px-3 py-3 sm:mt-5 sm:p-4 lg:mt-6">
+          <p className="text-xs text-slate-400 sm:text-sm">
             Showing <span className="font-semibold text-slate-300">{data.totalServices}</span> trending services
             {data.period && ` for the last ${data.period}`}
           </p>
