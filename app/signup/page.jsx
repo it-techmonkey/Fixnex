@@ -217,11 +217,11 @@ const SignupPage = () => {
                 />
                 <span>
                   I agree to the{' '}
-                  <Link href="#" className="text-blue-400 transition hover:text-blue-300">
+                  <Link href="/terms-and-conditions" className="text-blue-400 transition hover:text-blue-300">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="#" className="text-blue-400 transition hover:text-blue-300">
+                  <Link href="/privacy-policy" className="text-blue-400 transition hover:text-blue-300">
                     Privacy Policy
                   </Link>.
                 </span>
@@ -251,4 +251,3 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
-

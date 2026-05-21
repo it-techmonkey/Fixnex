@@ -217,6 +217,18 @@ const Footer = () => {
               <Link href="/admin-dashboard" className="transition hover:text-white text-xs">
                 Admin Dashboard
               </Link>
+              <Link href="/terms-and-conditions" className="transition hover:text-white text-xs">
+                Terms & Conditions
+              </Link>
+              <Link href="/service-delivery-parts-delivery-policy" className="transition hover:text-white text-xs">
+                Delivery Policy
+              </Link>
+              <Link href="/privacy-policy" className="transition hover:text-white text-xs">
+                Privacy Policy
+              </Link>
+              <Link href="/refund-policy" className="transition hover:text-white text-xs">
+                Refund Policy
+              </Link>
             </div>
             <p>© {new Date().getFullYear()} FixNex. All rights reserved.</p>
           </div>
