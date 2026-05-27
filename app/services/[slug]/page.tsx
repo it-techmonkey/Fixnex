@@ -558,16 +558,6 @@ const ServiceDetailPage = () => {
                           <IconComponent width={28} height={28} className="sm:hidden text-white" />
                         </div>
                       )}
-                      <div className="absolute bottom-4 left-5 right-5 text-white/70 text-[10px] uppercase tracking-widest">
-                        <a
-                          href={serviceImage.creditUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="truncate block hover:text-white"
-                        >
-                          Photo: {serviceImage.credit}
-                        </a>
-                      </div>
                     </>
                   ) : (
                     <div className="relative w-full h-full bg-linear-to-br from-gray-800 to-gray-900 flex items-center justify-center">
@@ -1282,4 +1272,3 @@ const ServiceDetailPage = () => {
 };
 
 export default ServiceDetailPage;
-

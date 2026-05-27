@@ -333,18 +333,6 @@ const ServicesPage = () => {
                                 priority={false}
                               />
                               <div className="absolute inset-0 bg-linear-to-br from-black/40 via-black/20 to-transparent group-hover:from-black/50 group-hover:via-black/30 transition-colors" />
-                              {image.credit !== "Local" && (
-                                <div className="absolute bottom-1 left-2 right-2 sm:bottom-3 sm:left-4 sm:right-4 text-white/60 text-[8px] sm:text-[10px] uppercase tracking-wide opacity-0 sm:opacity-100">
-                                  <a
-                                    href={image.creditUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="truncate block hover:text-white/90 transition"
-                                  >
-                                    Photo: {image.credit}
-                                  </a>
-                                </div>
-                              )}
                             </>
                           ) : (
                             <div className="relative w-full h-full bg-linear-to-br from-gray-800 via-gray-850 to-gray-900 flex items-center justify-center">
