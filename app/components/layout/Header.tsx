@@ -7,10 +7,11 @@ import Image from "next/image";
 type SessionState = {
   loading: boolean;
   isAuthenticated: boolean;
+  role: string | null;
 };
 
 const Header = () => {
-  const [session, setSession] = useState<SessionState>({ loading: true, isAuthenticated: false });
+  const [session, setSession] = useState<SessionState>({ loading: true, isAuthenticated: false, role: null });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const scrollPositionRef = useRef(0);
@@ -30,14 +31,15 @@ const Header = () => {
         }
 
         if (response.ok) {
-          setSession({ loading: false, isAuthenticated: true });
+          const data = await response.json();
+          setSession({ loading: false, isAuthenticated: true, role: data.user?.role ?? null });
         } else {
-          setSession({ loading: false, isAuthenticated: false });
+          setSession({ loading: false, isAuthenticated: false, role: null });
         }
       } catch (error) {
         console.error("Failed to fetch session:", error);
         if (!cancelled) {
-          setSession({ loading: false, isAuthenticated: false });
+          setSession({ loading: false, isAuthenticated: false, role: null });
         }
       }
     };
@@ -152,6 +154,11 @@ const Header = () => {
           className="hidden flex-1 items-center justify-center gap-8 text-sm font-heading text-gray-300 md:flex"
           aria-label="Main navigation"
         >
+          {session.role === "ADMIN" && (
+            <Link href="/admin-dashboard" className="transition-opacity hover:opacity-100">
+              Dashboard
+            </Link>
+          )}
           {navigationLinks.map((item) => (
             <Link key={item.href} href={item.href} className="transition-opacity hover:opacity-100">
               {item.label}
@@ -259,6 +266,15 @@ const Header = () => {
         </div>
 
         <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6 text-base font-medium">
+          {session.role === "ADMIN" && (
+            <Link
+              href="/admin-dashboard"
+              className="rounded-lg px-3 py-2 transition hover:bg-white/10"
+              onClick={closeMenu}
+            >
+              Dashboard
+            </Link>
+          )}
           {navigationLinks.map((item) => (
             <Link
               key={item.href}

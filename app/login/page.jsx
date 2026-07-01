@@ -41,10 +41,13 @@ const LoginForm = () => {
         return;
       }
 
-      // Get redirect URL from query parameter, default to home page
-      const redirectUrl = searchParams.get("redirect") || "/";
-      
-      router.push(redirectUrl);
+      // Admins go straight to the dashboard, everyone else to home (or redirect param)
+      if (data.user?.role === "ADMIN") {
+        router.push("/admin-dashboard");
+      } else {
+        const redirectUrl = searchParams.get("redirect") || "/";
+        router.push(redirectUrl);
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");

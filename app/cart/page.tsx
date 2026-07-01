@@ -258,47 +258,54 @@ const CartPage = () => {
         return;
       }
 
-      const response = await fetch("/api/bookings", {
+      // Initiate payment — server creates PaymentOrder and returns encrypted CCAvenue params
+      const response = await fetch("/api/payment/initiate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          bookingCartItemIds,
-          userId: session.userId,
-        }),
+        body: JSON.stringify({ bookingCartItemIds }),
       });
 
       if (!response.ok) {
         const data = await response.json().catch(() => null);
-        throw new Error(data?.message ?? "Failed to create booking.");
+        throw new Error(data?.message ?? "Failed to initiate payment.");
       }
 
-      setBookingMessage("Booking created successfully! We'll reach out shortly to confirm.");
-      setServices([]);
+      const { encRequest, accessCode, actionUrl } = await response.json() as {
+        encRequest: string;
+        accessCode: string;
+        actionUrl: string;
+      };
 
-      try {
-        await fetch(`/api/cart/${session.userId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ serviceIds: [] }),
-        });
-      } catch (error) {
-        console.error("Failed to clear cart after booking:", error);
-      }
+      // Build and submit a POST form to redirect the browser to CCAvenue
+      const form = document.createElement("form");
+      form.method = "post";
+      form.action = actionUrl;
+
+      const encInput = document.createElement("input");
+      encInput.type = "hidden";
+      encInput.name = "encRequest";
+      encInput.value = encRequest;
+      form.appendChild(encInput);
+
+      const accessInput = document.createElement("input");
+      accessInput.type = "hidden";
+      accessInput.name = "access_code";
+      accessInput.value = accessCode;
+      form.appendChild(accessInput);
+
+      document.body.appendChild(form);
+      form.submit();
     } catch (error) {
-      console.error("Failed to create booking:", error);
+      console.error("Failed to initiate payment:", error);
       setBookingMessage(
-        error instanceof Error ? error.message : "We couldn't create your booking. Please try again."
+        error instanceof Error ? error.message : "We couldn't initiate payment. Please try again."
       );
     } finally {
       setIsUpdating(false);
     }
   };
+
 
   const totalPrice = useMemo(() => {
     return services.reduce((sum, svc) => {
