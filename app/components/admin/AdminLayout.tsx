@@ -7,11 +7,11 @@ import { usePathname, useRouter } from "next/navigation";
 type AdminLayoutProps = {
   children: React.ReactNode;
   title?: string;
-  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' */
-  currentNav?: 'dashboard' | 'bookings' | 'payments';
+  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' | 'payment-links' */
+  currentNav?: 'dashboard' | 'bookings' | 'payments' | 'payment-links';
 };
 
-const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments'; label: string; href: string; icon: React.ReactNode }> = [
+const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-links'; label: string; href: string; icon: React.ReactNode }> = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -29,6 +29,12 @@ const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments'; label: strin
     label: 'Payments',
     href: '/admin-dashboard/payments',
     icon: <PaymentsIcon className="size-5" />,
+  },
+  {
+    key: 'payment-links',
+    label: 'Payment Links',
+    href: '/admin-dashboard/payment-links',
+    icon: <LinkIcon className="size-5" />,
   },
 ];
 
@@ -265,6 +271,15 @@ function PaymentsIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect width="20" height="14" x="2" y="5" rx="2" />
       <line x1="2" x2="22" y1="10" y2="10" />
+    </svg>
+  );
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>
   );
 }

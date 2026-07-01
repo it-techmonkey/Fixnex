@@ -53,10 +53,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 4. Find the PaymentOrder
-    const paymentOrder = await prisma.paymentOrder.findUnique({
-      where: { id: orderId },
-    });
+    // 4. Find the PaymentOrder (using raw query to bypass aggressive Next.js dev cache)
+    const paymentOrders: any[] = await prisma.$queryRaw`SELECT * FROM payment_orders WHERE id = ${orderId}`;
+    const paymentOrder = paymentOrders[0];
 
     if (!paymentOrder) {
       console.error("PaymentOrder not found:", orderId);
@@ -83,57 +82,82 @@ export async function POST(request: NextRequest) {
     if (isSuccess) {
       // 6a. Success path — create booking and payment record atomically
       await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        // Fetch the cart items to derive booking fields
-        const items = await tx.bookingCartItem.findMany({
-          where: { id: { in: paymentOrder.booking_cart_items } },
-        });
+        
+        if (paymentOrder.custom_payment_link_id || (paymentOrder as any).custom_payment_link) {
+          // --- CUSTOM PAYMENT LINK FLOW ---
+          // Mark custom link as PAID
+          const linkId = paymentOrder.custom_payment_link_id || (paymentOrder as any).custom_payment_link?.id;
+          await tx.customPaymentLink.update({
+            where: { id: linkId },
+            data: { status: "SUCCESS" },
+          });
 
-        // Aggregate price (sum of item prices)
-        const numericPrices = items
-          .map((item: { price: string | null }) => parseFloat(item.price ?? ""))
-          .filter((p: number) => Number.isFinite(p));
+          // Create payment record (so it appears in ledger)
+          await tx.payment.create({
+            data: {
+              order_id: paymentOrder.id,
+              transaction_id: bankRefNo,
+              tracking_id: trackingId,
+              amount: paymentOrder.amount,
+              status: orderStatus,
+              gateway: "ccavenue",
+              raw_response: ccData as object,
+            },
+          });
+        } else {
+          // --- STANDARD CHECKOUT FLOW ---
+          // Fetch the cart items to derive booking fields
+          const items = await tx.bookingCartItem.findMany({
+            where: { id: { in: paymentOrder.booking_cart_items } },
+          });
 
-        const totalPrice =
-          numericPrices.length > 0
-            ? numericPrices.reduce((sum: number, p: number) => sum + p, 0).toFixed(2)
-            : paymentOrder.amount;
+          // Aggregate price (sum of item prices)
+          const numericPrices = items
+            .map((item: { price: string | null }) => parseFloat(item.price ?? ""))
+            .filter((p: number) => Number.isFinite(p));
 
-        // Use first item's details as booking-level fields (same logic as bookings.controller.ts)
-        const firstItem = items[0];
+          const totalPrice =
+            numericPrices.length > 0
+              ? numericPrices.reduce((sum: number, p: number) => sum + p, 0).toFixed(2)
+              : paymentOrder.amount;
 
-        // Create the booking
-        const booking = await tx.booking.create({
-          data: {
-            user_id: paymentOrder.user_id,
-            category_name: firstItem?.category_name ?? null,
-            location: firstItem?.location ?? null,
-            service_type: firstItem?.service_type ?? null,
-            scheduled_date: firstItem?.scheduled_date ?? null,
-            time_slot: firstItem?.time_slot ?? null,
-            price: totalPrice,
-            status: "PENDING",
-          },
-        });
+          // Use first item's details as booking-level fields
+          const firstItem = items[0];
 
-        // Link all cart items to the new booking
-        await tx.bookingCartItem.updateMany({
-          where: { id: { in: paymentOrder.booking_cart_items } },
-          data: { booking_id: booking.id },
-        });
+          // Create the booking
+          const booking = await tx.booking.create({
+            data: {
+              user_id: paymentOrder.user_id,
+              category_name: firstItem?.category_name ?? null,
+              location: firstItem?.location ?? null,
+              service_type: firstItem?.service_type ?? null,
+              scheduled_date: firstItem?.scheduled_date ?? null,
+              time_slot: firstItem?.time_slot ?? null,
+              price: totalPrice,
+              status: "PENDING",
+            },
+          });
 
-        // Create payment record
-        await tx.payment.create({
-          data: {
-            order_id: paymentOrder.id,
-            transaction_id: bankRefNo,
-            tracking_id: trackingId,
-            amount: paymentOrder.amount,
-            status: orderStatus,
-            gateway: "ccavenue",
-            raw_response: ccData as object,
-            booking_id: booking.id,
-          },
-        });
+          // Link all cart items to the new booking
+          await tx.bookingCartItem.updateMany({
+            where: { id: { in: paymentOrder.booking_cart_items } },
+            data: { booking_id: booking.id },
+          });
+
+          // Create payment record linked to booking
+          await tx.payment.create({
+            data: {
+              order_id: paymentOrder.id,
+              transaction_id: bankRefNo,
+              tracking_id: trackingId,
+              amount: paymentOrder.amount,
+              status: orderStatus,
+              gateway: "ccavenue",
+              raw_response: ccData as object,
+              booking_id: booking.id,
+            },
+          });
+        }
 
         // Mark payment order as succeeded
         await tx.paymentOrder.update({
@@ -143,13 +167,15 @@ export async function POST(request: NextRequest) {
       });
 
       // Clear cart (best-effort, outside transaction — failure here does not block the user)
-      try {
-        await prisma.cart.update({
-          where: { user_id: paymentOrder.user_id },
-          data: { services: { set: [] } },
-        });
-      } catch (cartErr) {
-        console.error("Failed to clear cart after successful payment:", cartErr);
+      if (!paymentOrder.custom_payment_link_id) {
+        try {
+          await prisma.cart.update({
+            where: { user_id: paymentOrder.user_id },
+            data: { services: { set: [] } },
+          });
+        } catch (cartErr) {
+          console.error("Failed to clear cart after successful payment:", cartErr);
+        }
       }
 
       return NextResponse.redirect(`${appUrl}/payment/success?orderId=${orderId}`, {

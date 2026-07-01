@@ -26,109 +26,171 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Verify session
+    // 2. Parse + validate body
+    const body = (await request.json()) as { bookingCartItemIds?: unknown; custom_link_id?: string };
+    
+    // 3. Verify session (ONLY REQUIRED IF NOT A CUSTOM LINK)
     const session = getSessionFromRequest(request);
-    if (!session) {
+    if (!body.custom_link_id && !session) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
 
-    // 3. Parse + validate body
-    const body = (await request.json()) as { bookingCartItemIds?: unknown };
-    const rawIds = body.bookingCartItemIds;
+    let totalAmount = "0.00";
+    let paymentOrderData: any = {
+      user_id: session?.userId || "guest",
+      currency: "AED",
+    };
 
-    if (!Array.isArray(rawIds) || rawIds.length === 0) {
-      return NextResponse.json(
-        { message: "bookingCartItemIds must be a non-empty array." },
-        { status: 400 }
+    if (body.custom_link_id) {
+      // HANDLE CUSTOM PAYMENT LINK
+      const customLink = await prisma.customPaymentLink.findUnique({
+        where: { id: body.custom_link_id },
+      });
+
+      if (!customLink) {
+        return NextResponse.json({ message: "Custom payment link not found." }, { status: 404 });
+      }
+
+      if (customLink.status !== "PENDING") {
+        return NextResponse.json({ message: "This payment has already been completed or cancelled." }, { status: 400 });
+      }
+
+      totalAmount = customLink.amount;
+      paymentOrderData.custom_payment_link_id = customLink.id;
+      paymentOrderData.amount = totalAmount;
+
+    } else {
+      // HANDLE STANDARD CART CHECKOUT
+      const rawIds = body.bookingCartItemIds;
+
+      if (!Array.isArray(rawIds) || rawIds.length === 0) {
+        return NextResponse.json(
+          { message: "bookingCartItemIds must be a non-empty array." },
+          { status: 400 }
+        );
+      }
+
+      const bookingCartItemIds: string[] = rawIds
+        .map((id) => (typeof id === "string" ? id.trim() : ""))
+        .filter((id) => id.length > 0);
+
+      if (bookingCartItemIds.length === 0) {
+        return NextResponse.json(
+          { message: "No valid bookingCartItemIds provided." },
+          { status: 400 }
+        );
+      }
+
+      // 4. Fetch and validate cart items
+      const items = await bookingCartItemService.getByIds(bookingCartItemIds);
+
+      if (items.length === 0) {
+        return NextResponse.json(
+          { message: "No booking cart items found for the provided IDs." },
+          { status: 404 }
+        );
+      }
+
+      const missingIds = bookingCartItemIds.filter(
+        (id: string) => !items.some((item: { id: string }) => item.id === id)
       );
-    }
+      if (missingIds.length > 0) {
+        return NextResponse.json(
+          { message: "Some booking cart items were not found.", missingIds },
+          { status: 404 }
+        );
+      }
 
-    const bookingCartItemIds: string[] = rawIds
-      .map((id) => (typeof id === "string" ? id.trim() : ""))
-      .filter((id) => id.length > 0);
-
-    if (bookingCartItemIds.length === 0) {
-      return NextResponse.json(
-        { message: "No valid bookingCartItemIds provided." },
-        { status: 400 }
+      // 5. Ensure no items are already booked
+      const alreadyBooked = items.filter(
+        (item: { booking_id: string | null }) => item.booking_id
       );
-    }
+      if (alreadyBooked.length > 0) {
+        return NextResponse.json(
+          {
+            message: "One or more items are already linked to a booking.",
+            bookedItemIds: alreadyBooked.map((i: { id: string }) => i.id),
+          },
+          { status: 400 }
+        );
+      }
 
-    // 4. Fetch and validate cart items
-    const items = await bookingCartItemService.getByIds(bookingCartItemIds);
-
-    if (items.length === 0) {
-      return NextResponse.json(
-        { message: "No booking cart items found for the provided IDs." },
-        { status: 404 }
+      // 6. Ensure all items belong to the authenticated user
+      const unauthorizedItems = items.filter(
+        (item: { cart?: { user_id: string } | null }) =>
+          item.cart?.user_id !== session?.userId
       );
+      if (unauthorizedItems.length > 0) {
+        return NextResponse.json(
+          { message: "Access denied to one or more cart items." },
+          { status: 403 }
+        );
+      }
+
+      // 7. Calculate total amount (sum of numeric prices)
+      const numericPrices = items
+        .map((item: { price: string | null }) => parseFloat(item.price ?? ""))
+        .filter((p: number) => Number.isFinite(p));
+
+      totalAmount =
+        numericPrices.length > 0
+          ? numericPrices.reduce((sum: number, p: number) => sum + p, 0).toFixed(2)
+          : "0.00";
+
+      paymentOrderData.booking_cart_items = bookingCartItemIds;
+      paymentOrderData.amount = totalAmount;
     }
-
-    const missingIds = bookingCartItemIds.filter(
-      (id: string) => !items.some((item: { id: string }) => item.id === id)
-    );
-    if (missingIds.length > 0) {
-      return NextResponse.json(
-        { message: "Some booking cart items were not found.", missingIds },
-        { status: 404 }
-      );
-    }
-
-    // 5. Ensure no items are already booked
-    const alreadyBooked = items.filter(
-      (item: { booking_id: string | null }) => item.booking_id
-    );
-    if (alreadyBooked.length > 0) {
-      return NextResponse.json(
-        {
-          message: "One or more items are already linked to a booking.",
-          bookedItemIds: alreadyBooked.map((i: { id: string }) => i.id),
-        },
-        { status: 400 }
-      );
-    }
-
-    // 6. Ensure all items belong to the authenticated user
-    const unauthorizedItems = items.filter(
-      (item: { cart?: { user_id: string } | null }) =>
-        item.cart?.user_id !== session.userId
-    );
-    if (unauthorizedItems.length > 0) {
-      return NextResponse.json(
-        { message: "Access denied to one or more cart items." },
-        { status: 403 }
-      );
-    }
-
-    // 7. Calculate total amount (sum of numeric prices)
-    const numericPrices = items
-      .map((item: { price: string | null }) => parseFloat(item.price ?? ""))
-      .filter((p: number) => Number.isFinite(p));
-
-    const totalAmount =
-      numericPrices.length > 0
-        ? numericPrices.reduce((sum: number, p: number) => sum + p, 0).toFixed(2)
-        : "0.00";
 
     // 8. Get user details for CCAvenue billing fields
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { email: true, fullName: true, phoneNumber: true },
-    });
+    let userDetails = {
+      email: "guest@fixnex.ae",
+      fullName: "Guest Customer",
+      phoneNumber: "0000000000",
+    };
 
-    if (!user) {
-      return NextResponse.json({ message: "User not found." }, { status: 404 });
+    if (session?.userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { email: true, fullName: true, phoneNumber: true },
+      });
+      if (user) {
+        userDetails = {
+          email: user.email,
+          fullName: user.fullName || "Customer",
+          phoneNumber: user.phoneNumber || "0000000000",
+        };
+      }
+    } else if (body.custom_link_id) {
+      const customLink = await prisma.customPaymentLink.findUnique({
+        where: { id: body.custom_link_id }
+      });
+      if (customLink && customLink.customer_email) {
+        userDetails.email = customLink.customer_email;
+      }
     }
 
-    // 9. Create PaymentOrder (temp record, status = PENDING)
-    const paymentOrder = await prisma.paymentOrder.create({
-      data: {
-        user_id: session.userId,
-        booking_cart_items: bookingCartItemIds,
-        amount: totalAmount,
-        currency: "AED",
-      },
-    });
+    // 9. Create or Reuse PaymentOrder (temp record, status = PENDING)
+    let paymentOrder;
+    if (body.custom_link_id) {
+      // Find existing or create new
+      const existingOrder = await prisma.paymentOrder.findUnique({
+        where: { custom_payment_link_id: body.custom_link_id },
+      });
+      if (existingOrder) {
+        paymentOrder = await prisma.paymentOrder.update({
+          where: { id: existingOrder.id },
+          data: { status: "PENDING", updated_at: new Date() },
+        });
+      } else {
+        paymentOrder = await prisma.paymentOrder.create({
+          data: paymentOrderData,
+        });
+      }
+    } else {
+      paymentOrder = await prisma.paymentOrder.create({
+        data: paymentOrderData,
+      });
+    }
 
     // 10. Build CCAvenue request params and encrypt
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
@@ -142,16 +204,16 @@ export async function POST(request: NextRequest) {
       cancel_url: `${appUrl}/api/payment/callback`,
       language: "EN",
       // Billing details
-      billing_name: user.fullName,
-      billing_email: user.email,
-      billing_phone: user.phoneNumber ?? "NA",
+      billing_name: userDetails.fullName || "Customer",
+      billing_email: userDetails.email,
+      billing_tel: userDetails.phoneNumber || "0000000000",
       billing_address: "NA",
       billing_city: "Dubai",
       billing_state: "Dubai",
       billing_zip: "00000",
       billing_country: "UAE",
       // Delivery (same as billing for services)
-      delivery_name: user.fullName,
+      delivery_name: userDetails.fullName || "Customer",
       delivery_address: "NA",
       delivery_city: "Dubai",
       delivery_state: "Dubai",
@@ -170,7 +232,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Payment initiation error:", error);
     return NextResponse.json(
-      { message: "Failed to initiate payment. Please try again." },
+      { message: `Failed to initiate payment. ${(error as Error).message}` },
       { status: 500 }
     );
   }

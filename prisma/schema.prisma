@@ -124,15 +124,17 @@ enum BookingStatus {
 // ---------------------------------------------------------------------------
 
 model PaymentOrder {
-  id                   String             @id @default(cuid())
-  user_id              String
-  booking_cart_items   String[]           // bookingCartItemId references
-  amount               String
-  currency             String             @default("AED")
-  status               PaymentOrderStatus @default(PENDING)
-  created_at           DateTime           @default(now())
-  updated_at           DateTime           @updatedAt
-  payment              Payment?
+  id                     String             @id @default(cuid())
+  user_id                String
+  booking_cart_items     String[]           // bookingCartItemId references
+  custom_payment_link_id String?            @unique
+  custom_payment_link    CustomPaymentLink? @relation(fields: [custom_payment_link_id], references: [id])
+  amount                 String
+  currency               String             @default("AED")
+  status                 PaymentOrderStatus @default(PENDING)
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+  payment                Payment?
 
   @@index([user_id])
   @@map("payment_orders")
@@ -159,4 +161,17 @@ model Payment {
   updated_at     DateTime     @updatedAt
 
   @@map("payments")
+}
+
+model CustomPaymentLink {
+  id             String        @id @default(cuid())
+  amount         String
+  description    String
+  customer_email String?
+  status         PaymentOrderStatus @default(PENDING)
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+  payment_order  PaymentOrder?
+
+  @@map("custom_payment_links")
 }
