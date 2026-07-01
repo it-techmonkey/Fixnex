@@ -7,11 +7,11 @@ import { usePathname, useRouter } from "next/navigation";
 type AdminLayoutProps = {
   children: React.ReactNode;
   title?: string;
-  /** Which nav item is active: 'dashboard' | 'bookings' */
-  currentNav?: 'dashboard' | 'bookings';
+  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' */
+  currentNav?: 'dashboard' | 'bookings' | 'payments';
 };
 
-const navItems: Array<{ key: 'dashboard' | 'bookings'; label: string; href: string; icon: React.ReactNode }> = [
+const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments'; label: string; href: string; icon: React.ReactNode }> = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -23,6 +23,12 @@ const navItems: Array<{ key: 'dashboard' | 'bookings'; label: string; href: stri
     label: 'Bookings',
     href: '/admin',
     icon: <CalendarListIcon className="size-5" />,
+  },
+  {
+    key: 'payments',
+    label: 'Payments',
+    href: '/admin-dashboard/payments',
+    icon: <PaymentsIcon className="size-5" />,
   },
 ];
 
@@ -93,7 +99,7 @@ export function AdminLayout({ children, title, currentNav }: AdminLayoutProps) {
     );
   }
 
-  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : 'bookings');
+  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : pathname.includes('/payments') ? 'payments' : 'bookings');
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -250,6 +256,15 @@ function LockIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+function PaymentsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <line x1="2" x2="22" y1="10" y2="10" />
     </svg>
   );
 }

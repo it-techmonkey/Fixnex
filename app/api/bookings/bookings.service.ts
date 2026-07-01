@@ -164,7 +164,25 @@ export class BookingsService {
       }),
     ]);
 
-    return { bookings, total };
+    const bookingIds = bookings.map((b) => b.id);
+    const payments = await prisma.payment.findMany({
+      where: { booking_id: { in: bookingIds } },
+      select: { booking_id: true, status: true },
+    });
+    const paymentMap = payments.reduce((acc, p) => {
+      if (p.booking_id) {
+        if (!acc[p.booking_id]) acc[p.booking_id] = [];
+        acc[p.booking_id].push(p);
+      }
+      return acc;
+    }, {} as Record<string, { status: string }[]>);
+
+    const bookingsWithPayments = bookings.map((b) => ({
+      ...b,
+      payments: paymentMap[b.id] || [],
+    }));
+
+    return { bookings: bookingsWithPayments, total };
   }
 
   async getBookingsByUserId(userId: string) {
