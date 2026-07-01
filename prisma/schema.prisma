@@ -118,3 +118,45 @@ enum BookingStatus {
   CANCELLED
   REJECTED
 }
+
+// ---------------------------------------------------------------------------
+// Payment models
+// ---------------------------------------------------------------------------
+
+model PaymentOrder {
+  id                   String             @id @default(cuid())
+  user_id              String
+  booking_cart_items   String[]           // bookingCartItemId references
+  amount               String
+  currency             String             @default("AED")
+  status               PaymentOrderStatus @default(PENDING)
+  created_at           DateTime           @default(now())
+  updated_at           DateTime           @updatedAt
+  payment              Payment?
+
+  @@index([user_id])
+  @@map("payment_orders")
+}
+
+enum PaymentOrderStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  order_id       String       @unique
+  payment_order  PaymentOrder @relation(fields: [order_id], references: [id])
+  transaction_id String?
+  tracking_id    String?
+  amount         String
+  status         String       // CCAvenue raw status: Success | Failure | Aborted | Invalid
+  gateway        String       @default("ccavenue")
+  raw_response   Json?
+  booking_id     String?      // populated after booking created on success
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+
+  @@map("payments")
+}

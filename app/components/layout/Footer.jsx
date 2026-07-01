@@ -214,9 +214,7 @@ const Footer = () => {
 
           <div className="flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-slate-200/60 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-4">
-              <Link href="/admin-dashboard" className="transition hover:text-white text-xs">
-                Admin Dashboard
-              </Link>
+
               <Link href="/terms-and-conditions" className="transition hover:text-white text-xs">
                 Terms & Conditions
               </Link>
