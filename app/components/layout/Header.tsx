@@ -196,7 +196,7 @@ const Header = () => {
                   } catch (error) {
                     console.error("Failed to log out:", error);
                   } finally {
-                    setSession({ loading: false, isAuthenticated: false, role: undefined });
+                    setSession({ loading: false, isAuthenticated: false, role: null });
                     window.location.href = "/";
                   }
                 }}
@@ -325,7 +325,7 @@ const Header = () => {
                 } catch (error) {
                   console.error("Failed to log out:", error);
                 } finally {
-                  setSession({ loading: false, isAuthenticated: false });
+                  setSession({ loading: false, isAuthenticated: false, role: null });
                   window.location.href = "/";
                 }
               }}
