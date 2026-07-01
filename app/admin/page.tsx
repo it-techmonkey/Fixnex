@@ -42,6 +42,7 @@ type Booking = {
   created_at: string;
   user: BookingUser | null;
   bookingCartItems: BookingCartItem[];
+  payments?: { status: string }[];
 };
 
 type PaginationPayload = {
@@ -756,6 +757,7 @@ const AdminPageContent = () => {
                     <th scope="col" className="whitespace-nowrap px-2 py-3 sm:px-4">Scheduled Date</th>
                     <th scope="col" className="whitespace-nowrap px-2 py-3 sm:px-4">Time Slot</th>
                     <th scope="col" className="whitespace-nowrap px-2 py-3 sm:px-4 text-right">Price</th>
+                    <th scope="col" className="whitespace-nowrap px-2 py-3 sm:px-4 text-right">Payment Status</th>
                     {/* <th scope="col" className="whitespace-nowrap px-4 py-3">Actions</th> */}
                   </tr>
                 </thead>
@@ -790,12 +792,15 @@ const AdminPageContent = () => {
                         <td className="px-2 py-4 sm:px-4 text-right">
                           <SkeletonLine width="w-16" />
                         </td>
+                        <td className="px-2 py-4 sm:px-4 text-right">
+                          <SkeletonLine width="w-24" />
+                        </td>
                       </tr>
                     ))}
 
                   {!loading && !error && servicesByBooking.length === 0 && (
                     <tr>
-                      <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-400">
+                      <td colSpan={10} className="px-4 py-10 text-center text-sm text-slate-400">
                         No services match the current filters. Adjust your search or reset the filters.
                       </td>
                     </tr>
@@ -836,6 +841,7 @@ const AdminPageContent = () => {
                                 >
                                   <StatusBadge status={group.booking.status} />
                                 </td>
+
                                 <td
                                   rowSpan={group.services.length}
                                   className="px-2 py-4 sm:px-4 align-top"
@@ -865,6 +871,22 @@ const AdminPageContent = () => {
                             <td className="whitespace-nowrap px-2 py-4 sm:px-4 text-right text-slate-200 text-xs sm:text-sm">
                               {formatCurrency(service.price)}
                             </td>
+                            {serviceIndex === 0 && (
+                              <td
+                                rowSpan={group.services.length}
+                                className="whitespace-nowrap px-2 py-4 sm:px-4 align-top border-l border-slate-800/50 text-right"
+                              >
+                                {group.booking.payments?.some(p => p.status === "Success") ? (
+                                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+                                    Successful
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+                                    Pending
+                                  </span>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </Fragment>
