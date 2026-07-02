@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 2. Fetch User Info
-    const userIds = [...new Set(payments.map(p => p.payment_order.user_id))];
+    const userIds = [...new Set(payments.map(p => p.payment_order.user_id).filter(Boolean) as string[])];
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, fullName: true, email: true }
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const bookingIds = [...new Set(payments.map(p => p.booking_id).filter(Boolean) as string[])];
     const bookings = await prisma.booking.findMany({
       where: { id: { in: bookingIds } },
-      select: { id: true, category_name: true, service_type: true }
+      select: { id: true, category_name: true, service_type: true, guest_name: true, guest_email: true }
     });
     const bookingMap = new Map(bookings.map(b => [b.id, b]));
 
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // 5. Format Data
     let formattedPayments = payments.map(payment => {
-      const user = userMap.get(payment.payment_order.user_id);
+      const user = payment.payment_order.user_id ? userMap.get(payment.payment_order.user_id) : null;
       
       // Try to get name from Booking first
       const booking = payment.booking_id ? bookingMap.get(payment.booking_id) : null;
@@ -66,6 +66,20 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      let userInfo = { id: "Guest", name: "Guest Customer", email: "", isGuest: true };
+      if (user) {
+         userInfo = { id: user.id, name: user.fullName || "Customer", email: user.email, isGuest: false };
+      } else {
+         const raw = payment.raw_response as any;
+         if (booking && booking.guest_name) {
+             userInfo.name = booking.guest_name;
+             userInfo.email = booking.guest_email || "";
+         } else if (raw && raw.billing_name) {
+             userInfo.name = raw.billing_name;
+             userInfo.email = raw.billing_email || "";
+         }
+      }
+
       return {
         id: payment.id,
         transaction_id: payment.transaction_id || "N/A",
@@ -74,7 +88,7 @@ export async function GET(request: NextRequest) {
         status: payment.status,
         created_at: payment.created_at,
         service_name: serviceName,
-        user: user ? { id: user.id, name: user.fullName, email: user.email } : { id: "Unknown", name: "Unknown", email: "" },
+        user: userInfo,
         booking_id: payment.booking_id,
         payment_mode: (payment.raw_response as any)?.payment_mode || "Unknown",
         card_name: (payment.raw_response as any)?.card_name || "Unknown",

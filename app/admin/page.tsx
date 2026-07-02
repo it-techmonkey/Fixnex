@@ -41,6 +41,9 @@ type Booking = {
   status: string;
   created_at: string;
   user: BookingUser | null;
+  guest_name?: string | null;
+  guest_email?: string | null;
+  guest_phone?: string | null;
   bookingCartItems: BookingCartItem[];
   payments?: { status: string }[];
 };
@@ -965,6 +968,16 @@ const DateInput = ({
 );
 
 const getUserDisplayName = (booking: Booking) => {
+  if (booking.guest_name) {
+    return (
+      <span className="flex items-center gap-2">
+        {booking.guest_name}
+        <span className="inline-flex items-center rounded-md bg-purple-400/10 px-1.5 py-0.5 text-[10px] font-medium text-purple-400 ring-1 ring-inset ring-purple-400/20">
+          GUEST
+        </span>
+      </span>
+    );
+  }
   if (booking.user?.fullName && booking.user.fullName.trim().length > 0) {
     return booking.user.fullName;
   }

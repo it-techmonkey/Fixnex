@@ -66,6 +66,9 @@ model Booking {
   bookingCartItems BookingCartItem[]
   user_id        String?
   user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  guest_name     String?
+  guest_email    String?
+  guest_phone    String?
   category_name  String?
   location       String?
   service_type   String?
@@ -96,8 +99,8 @@ model BookingCartItem {
   id             String    @id @default(cuid())
   services       Service   @relation(fields: [service_id], references: [id], onDelete: Cascade)
   service_id     String
-  cart_id        String
-  cart           Cart      @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+  cart_id        String?
+  cart           Cart?     @relation(fields: [cart_id], references: [id], onDelete: Cascade)
   category_name  String?
   location       String?
   service_type   String?
@@ -125,7 +128,7 @@ enum BookingStatus {
 
 model PaymentOrder {
   id                     String             @id @default(cuid())
-  user_id                String
+  user_id                String?
   booking_cart_items     String[]           // bookingCartItemId references
   custom_payment_link_id String?            @unique
   custom_payment_link    CustomPaymentLink? @relation(fields: [custom_payment_link_id], references: [id])

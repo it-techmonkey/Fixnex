@@ -128,6 +128,9 @@ export async function POST(request: NextRequest) {
           const booking = await tx.booking.create({
             data: {
               user_id: paymentOrder.user_id,
+              guest_name: !paymentOrder.user_id ? (ccData["billing_name"] || "Guest") : null,
+              guest_email: !paymentOrder.user_id ? ccData["billing_email"] : null,
+              guest_phone: !paymentOrder.user_id ? ccData["billing_tel"] : null,
               category_name: firstItem?.category_name ?? null,
               location: firstItem?.location ?? null,
               service_type: firstItem?.service_type ?? null,
@@ -167,7 +170,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Clear cart (best-effort, outside transaction — failure here does not block the user)
-      if (!paymentOrder.custom_payment_link_id) {
+      if (!paymentOrder.custom_payment_link_id && paymentOrder.user_id) {
         try {
           await prisma.cart.update({
             where: { user_id: paymentOrder.user_id },

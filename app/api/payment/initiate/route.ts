@@ -27,17 +27,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse + validate body
-    const body = (await request.json()) as { bookingCartItemIds?: unknown; custom_link_id?: string };
+    const body = (await request.json()) as { 
+      bookingCartItemIds?: unknown; 
+      custom_link_id?: string;
+      guestDetails?: { name: string; email: string; phone: string };
+      guestCartItems?: any[];
+    };
     
-    // 3. Verify session (ONLY REQUIRED IF NOT A CUSTOM LINK)
+    // 3. Verify session (ONLY REQUIRED IF NOT A CUSTOM LINK AND NOT GUEST)
     const session = getSessionFromRequest(request);
-    if (!body.custom_link_id && !session) {
+    if (!body.custom_link_id && !session && !body.guestDetails) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
 
     let totalAmount = "0.00";
     let paymentOrderData: any = {
-      user_id: session?.userId || "guest",
+      user_id: session?.userId || null,
       currency: "AED",
     };
 
@@ -61,70 +66,107 @@ export async function POST(request: NextRequest) {
 
     } else {
       // HANDLE STANDARD CART CHECKOUT
-      const rawIds = body.bookingCartItemIds;
+      let bookingCartItemIds: string[] = [];
+      let items: any[] = [];
+      const isGuest = !session && !!body.guestDetails && !!body.guestCartItems;
 
-      if (!Array.isArray(rawIds) || rawIds.length === 0) {
-        return NextResponse.json(
-          { message: "bookingCartItemIds must be a non-empty array." },
-          { status: 400 }
+      if (isGuest) {
+        const guestItems = body.guestCartItems || [];
+        if (guestItems.length === 0) {
+          return NextResponse.json({ message: "Guest cart is empty." }, { status: 400 });
+        }
+
+        // Generate BookingCartItems on the fly
+        for (const gItem of guestItems) {
+           const service = await prisma.service.findUnique({ where: { id: gItem.service_id } });
+           if (!service) continue;
+           
+           const price = service.normal_price;
+           
+           const createdItem = await prisma.bookingCartItem.create({
+             data: {
+               service_id: service.id,
+               category_name: gItem.category_name,
+               location: gItem.location,
+               service_type: gItem.service_type,
+               scheduled_date: gItem.scheduled_date ? new Date(gItem.scheduled_date) : null,
+               time_slot: gItem.time_slot,
+               price: price,
+             }
+           });
+           bookingCartItemIds.push(createdItem.id);
+           items.push(createdItem);
+        }
+
+        if (bookingCartItemIds.length === 0) {
+           return NextResponse.json({ message: "Invalid guest cart items." }, { status: 400 });
+        }
+      } else {
+        const rawIds = body.bookingCartItemIds;
+
+        if (!Array.isArray(rawIds) || rawIds.length === 0) {
+          return NextResponse.json(
+            { message: "bookingCartItemIds must be a non-empty array." },
+            { status: 400 }
+          );
+        }
+
+        bookingCartItemIds = rawIds
+          .map((id) => (typeof id === "string" ? id.trim() : ""))
+          .filter((id) => id.length > 0);
+
+        if (bookingCartItemIds.length === 0) {
+          return NextResponse.json(
+            { message: "No valid bookingCartItemIds provided." },
+            { status: 400 }
+          );
+        }
+
+        // 4. Fetch and validate cart items
+        items = await bookingCartItemService.getByIds(bookingCartItemIds);
+
+        if (items.length === 0) {
+          return NextResponse.json(
+            { message: "No booking cart items found for the provided IDs." },
+            { status: 404 }
+          );
+        }
+
+        const missingIds = bookingCartItemIds.filter(
+          (id: string) => !items.some((item: { id: string }) => item.id === id)
         );
-      }
+        if (missingIds.length > 0) {
+          return NextResponse.json(
+            { message: "Some booking cart items were not found.", missingIds },
+            { status: 404 }
+          );
+        }
 
-      const bookingCartItemIds: string[] = rawIds
-        .map((id) => (typeof id === "string" ? id.trim() : ""))
-        .filter((id) => id.length > 0);
-
-      if (bookingCartItemIds.length === 0) {
-        return NextResponse.json(
-          { message: "No valid bookingCartItemIds provided." },
-          { status: 400 }
+        // 5. Ensure no items are already booked
+        const alreadyBooked = items.filter(
+          (item: { booking_id: string | null }) => item.booking_id
         );
-      }
+        if (alreadyBooked.length > 0) {
+          return NextResponse.json(
+            {
+              message: "One or more items are already linked to a booking.",
+              bookedItemIds: alreadyBooked.map((i: { id: string }) => i.id),
+            },
+            { status: 400 }
+          );
+        }
 
-      // 4. Fetch and validate cart items
-      const items = await bookingCartItemService.getByIds(bookingCartItemIds);
-
-      if (items.length === 0) {
-        return NextResponse.json(
-          { message: "No booking cart items found for the provided IDs." },
-          { status: 404 }
+        // 6. Ensure all items belong to the authenticated user
+        const unauthorizedItems = items.filter(
+          (item: { cart?: { user_id: string } | null }) =>
+            item.cart?.user_id !== session?.userId
         );
-      }
-
-      const missingIds = bookingCartItemIds.filter(
-        (id: string) => !items.some((item: { id: string }) => item.id === id)
-      );
-      if (missingIds.length > 0) {
-        return NextResponse.json(
-          { message: "Some booking cart items were not found.", missingIds },
-          { status: 404 }
-        );
-      }
-
-      // 5. Ensure no items are already booked
-      const alreadyBooked = items.filter(
-        (item: { booking_id: string | null }) => item.booking_id
-      );
-      if (alreadyBooked.length > 0) {
-        return NextResponse.json(
-          {
-            message: "One or more items are already linked to a booking.",
-            bookedItemIds: alreadyBooked.map((i: { id: string }) => i.id),
-          },
-          { status: 400 }
-        );
-      }
-
-      // 6. Ensure all items belong to the authenticated user
-      const unauthorizedItems = items.filter(
-        (item: { cart?: { user_id: string } | null }) =>
-          item.cart?.user_id !== session?.userId
-      );
-      if (unauthorizedItems.length > 0) {
-        return NextResponse.json(
-          { message: "Access denied to one or more cart items." },
-          { status: 403 }
-        );
+        if (unauthorizedItems.length > 0) {
+          return NextResponse.json(
+            { message: "Access denied to one or more cart items." },
+            { status: 403 }
+          );
+        }
       }
 
       // 7. Calculate total amount (sum of numeric prices)
@@ -148,7 +190,13 @@ export async function POST(request: NextRequest) {
       phoneNumber: "0000000000",
     };
 
-    if (session?.userId) {
+    if (body.guestDetails) {
+      userDetails = {
+        email: body.guestDetails.email,
+        fullName: body.guestDetails.name,
+        phoneNumber: body.guestDetails.phone,
+      };
+    } else if (session?.userId) {
       const user = await prisma.user.findUnique({
         where: { id: session.userId },
         select: { email: true, fullName: true, phoneNumber: true },
