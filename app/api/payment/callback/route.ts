@@ -178,6 +178,41 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Send Invoice Email via Resend (fire and forget)
+      try {
+        const billingEmail = ccData["billing_email"];
+        const billingName = ccData["billing_name"] || "Valued Customer";
+        
+        if (billingEmail) {
+          const { resend } = await import("@/lib/resend");
+          const { InvoiceEmail } = await import("@/app/components/emails/InvoiceEmail");
+          const { render } = await import("@react-email/components");
+          
+          const htmlOutput = await render(InvoiceEmail({
+            customerName: billingName,
+            customerEmail: billingEmail,
+            customerId: paymentOrder.user_id || "Guest",
+            orderId: orderId,
+            transactionId: bankRefNo || trackingId || "N/A",
+            amount: paymentOrder.amount,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            serviceName: paymentOrder.custom_payment_link_id ? "Custom Payment Link" : "Service Booking",
+            status: orderStatus || "SUCCESS",
+          }));
+
+          await resend.emails.send({
+            from: "payment@fixnex.ae",
+            to: billingEmail,
+            subject: `Payment Receipt - ${orderId}`,
+            html: htmlOutput,
+          });
+          console.log(`Invoice sent to ${billingEmail}`);
+        }
+      } catch (emailErr) {
+        console.error("Failed to send invoice email:", emailErr);
+      }
+
       return NextResponse.redirect(`${appUrl}/payment/success?orderId=${orderId}`, {
         status: 302,
       });
