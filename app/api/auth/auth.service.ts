@@ -77,6 +77,9 @@ export class AuthService {
     });
     const token = signAuthToken({ userId: user.id });
 
+    // Auto-link any past guest bookings
+    await this.autoLinkGuestBookings(user.id, email);
+
     return { user, token };
   }
 
@@ -100,6 +103,9 @@ export class AuthService {
 
     const token = signAuthToken({ userId: user.id });
     const { passwordHash: _passwordHash, ...publicUser } = user;
+
+    // Auto-link any past guest bookings
+    await this.autoLinkGuestBookings(user.id, email);
 
     return { user: publicUser, token };
   }
@@ -187,6 +193,22 @@ export class AuthService {
     });
 
     return result;
+  }
+
+  private async autoLinkGuestBookings(userId: string, email: string) {
+    try {
+      await this.client.booking.updateMany({
+        where: { 
+          guest_email: email, 
+          user_id: null 
+        },
+        data: { 
+          user_id: userId 
+        }
+      });
+    } catch (error) {
+      console.error("Failed to auto-link guest bookings:", error);
+    }
   }
 
   async findUserById(id: string) {
