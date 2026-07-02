@@ -291,8 +291,29 @@ const ServiceDetailPage = () => {
 
     const loadCart = async () => {
       if (!session.isAuthenticated || !session.userId) {
-        setCartItems([]);
+        try {
+           const localData = localStorage.getItem("fixnex_guest_cart");
+           if (localData) {
+             const guestServices = JSON.parse(localData);
+             // Transform CartService array to the BookingCartItem format expected by the page state
+             const formattedGuestItems = guestServices.map((svc: any) => ({
+                id: `guest-item-${svc.id}`,
+                services: svc,
+                price: svc.normal_price,
+                location: svc.location,
+                service_type: svc.serviceType,
+                scheduled_date: svc.scheduledDate,
+                time_slot: svc.timeSlot
+             }));
+             setCartItems(formattedGuestItems);
+           } else {
+             setCartItems([]);
+           }
+        } catch (e) {
+           setCartItems([]);
+        }
         setCartId(null);
+        setCartLoading(false);
         return;
       }
 
@@ -413,8 +434,60 @@ const ServiceDetailPage = () => {
     }
 
     if (!session.isAuthenticated || !session.userId) {
-      alert("Please log in to manage your cart.");
-      router.push(`/login?redirect=${encodeURIComponent(`/services/${slug}`)}`);
+      // HANDLE GUEST CART
+      if (!service) return;
+
+      const existingItem = cartItems.find((item) => item.services?.id === service.id);
+
+      if (!existingItem && !isFormComplete) {
+        alert("Please fill in location, service type, date, and time before adding to cart.");
+        return;
+      }
+
+      setIsUpdatingCart(true);
+      try {
+        let guestCart = [];
+        const localData = localStorage.getItem("fixnex_guest_cart");
+        if (localData) guestCart = JSON.parse(localData);
+
+        if (existingItem) {
+          // Remove
+          guestCart = guestCart.filter((svc: any) => svc.id !== service.id);
+          localStorage.setItem("fixnex_guest_cart", JSON.stringify(guestCart));
+          setCartItems((prev) => prev.filter((item) => item.services?.id !== service.id));
+        } else {
+          // Add
+          const newItem = {
+            id: service.id,
+            name: service.name,
+            normal_price: service.normal_price,
+            member_price: service.member_price,
+            icon: service.icon,
+            scheduledDate: date || null,
+            timeSlot: timeSlot || null,
+            location: location || null,
+            serviceType: subType || null,
+          };
+          guestCart.push(newItem);
+          localStorage.setItem("fixnex_guest_cart", JSON.stringify(guestCart));
+          
+          const formattedNewItem = {
+            id: `guest-item-${service.id}`,
+            services: newItem,
+            price: newItem.normal_price,
+            location: newItem.location,
+            service_type: newItem.serviceType,
+            scheduled_date: newItem.scheduledDate,
+            time_slot: newItem.timeSlot
+          };
+          
+          setCartItems((prev) => [...prev, formattedNewItem as any]);
+        }
+      } catch (err) {
+        console.error("Guest cart error", err);
+      } finally {
+        setIsUpdatingCart(false);
+      }
       return;
     }
 

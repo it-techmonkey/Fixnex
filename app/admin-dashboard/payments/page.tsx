@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "@/app/components/admin/AdminLayout";
 
-type PaymentUser = { id: string; name: string; email: string };
+type PaymentUser = { id: string; name: string; email: string; isGuest?: boolean };
 type Payment = {
   id: string;
   transaction_id: string;
@@ -102,8 +102,15 @@ export default function PaymentsPage() {
                         {new Date(payment.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-white">{payment.user.name}</div>
-                        <div className="text-xs text-slate-500">{payment.user.id}</div>
+                        <div className="font-medium text-white flex items-center gap-2">
+                          {payment.user.name}
+                          {payment.user.isGuest && (
+                            <span className="inline-flex items-center rounded-md bg-purple-400/10 px-2 py-0.5 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-400/20">
+                              Guest
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500">{payment.user.id !== "Guest" ? payment.user.id : payment.user.email}</div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 font-medium text-white">
                         AED {payment.amount}

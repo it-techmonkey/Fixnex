@@ -52,6 +52,8 @@ const CartPage = () => {
   const [cartLoading, setCartLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [bookingMessage, setBookingMessage] = useState<string | null>(null);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestDetails, setGuestDetails] = useState({ name: "", email: "", phone: "" });
 
   const formatDate = (value?: string | null) => {
     if (!value) {
@@ -109,7 +111,16 @@ const CartPage = () => {
 
     const loadCart = async () => {
       if (!session.isAuthenticated || !session.userId) {
-        setServices([]);
+        try {
+           const localData = localStorage.getItem("fixnex_guest_cart");
+           if (localData) {
+             setServices(JSON.parse(localData));
+           } else {
+             setServices([]);
+           }
+        } catch (e) {
+           setServices([]);
+        }
         setCartLoading(false);
         return;
       }
@@ -184,7 +195,9 @@ const CartPage = () => {
 
   const handleRemoveService = async (serviceId: string) => {
     if (!session.isAuthenticated || !session.userId) {
-      router.push("/login?redirect=/cart");
+      const nextServices = services.filter((svc) => svc.id !== serviceId);
+      setServices(nextServices);
+      localStorage.setItem("fixnex_guest_cart", JSON.stringify(nextServices));
       return;
     }
 
@@ -235,20 +248,35 @@ const CartPage = () => {
   };
 
   const handleCheckout = async () => {
-    if (!session.isAuthenticated || !session.userId) {
-      router.push("/login?redirect=/cart");
-      return;
-    }
-
     if (services.length === 0) {
       alert("Your cart is empty. Add services before booking.");
       return;
     }
 
-    try {
-      setIsUpdating(true);
-      setBookingMessage(null);
+    let requestBody: any = {};
 
+    if (!session.isAuthenticated || !session.userId) {
+      if (!showGuestForm) {
+        setShowGuestForm(true);
+        return;
+      }
+      if (!guestDetails.name || !guestDetails.email || !guestDetails.phone) {
+         setBookingMessage("Please fill in all your details to proceed.");
+         return;
+      }
+      requestBody = {
+         guestDetails,
+         guestCartItems: services.map(svc => ({
+            service_id: svc.id,
+            category_name: null,
+            location: svc.location,
+            service_type: svc.serviceType,
+            scheduled_date: svc.scheduledDate,
+            time_slot: svc.timeSlot,
+            price: svc.normal_price
+         }))
+      };
+    } else {
       const bookingCartItemIds = services
         .map((svc) => svc.bookingCartItemId)
         .filter((id): id is string => typeof id === "string" && id.length > 0);
@@ -257,13 +285,19 @@ const CartPage = () => {
         alert("We couldn't determine which items to book. Please refresh and try again.");
         return;
       }
+      requestBody = { bookingCartItemIds };
+    }
+
+    try {
+      setIsUpdating(true);
+      setBookingMessage(null);
 
       // Initiate payment — server creates PaymentOrder and returns encrypted CCAvenue params
       const response = await fetch("/api/payment/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ bookingCartItemIds }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -325,23 +359,6 @@ const CartPage = () => {
         <div className="min-h-[50vh] flex flex-col items-center justify-center text-white space-y-4">
           <div className="size-12 border-4 border-white/20 border-t-white rounded-full animate-spin" />
           <p className="text-white/80 text-lg font-['Space_Grotesk']">Loading your cart...</p>
-        </div>
-      );
-    }
-
-    if (!session.isAuthenticated) {
-      return (
-        <div className="min-h-[50vh] flex flex-col items-center justify-center text-center text-white space-y-4 sm:space-y-6 px-4">
-          <h2 className="text-2xl sm:text-3xl font-semibold font-['Space_Grotesk']">You are not signed in</h2>
-          <p className="text-white/70 text-sm sm:text-base max-w-lg">
-            Please log in to view and manage your cart. We'll bring you right back here afterward.
-          </p>
-          <button
-            onClick={() => router.push("/login?redirect=/cart")}
-            className="px-6 py-3 text-sm sm:text-base bg-white text-black rounded-lg font-semibold font-['Space_Grotesk'] hover:bg-gray-200 transition"
-          >
-            Log In
-          </button>
         </div>
       );
     }
@@ -459,6 +476,33 @@ const CartPage = () => {
                 <span>{formattedTotal}</span>
               </div>
             </div>
+
+            {showGuestForm && !session.isAuthenticated && (
+              <div className="space-y-3 mt-4 border-t border-gray-700 pt-4">
+                <h4 className="text-white text-lg font-semibold font-['Space_Grotesk']">Guest Details</h4>
+                <input 
+                  type="text" 
+                  placeholder="Full Name" 
+                  value={guestDetails.name}
+                  onChange={(e) => setGuestDetails(prev => ({...prev, name: e.target.value}))}
+                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition"
+                />
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  value={guestDetails.email}
+                  onChange={(e) => setGuestDetails(prev => ({...prev, email: e.target.value}))}
+                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition"
+                />
+                <input 
+                  type="tel" 
+                  placeholder="Phone Number" 
+                  value={guestDetails.phone}
+                  onChange={(e) => setGuestDetails(prev => ({...prev, phone: e.target.value}))}
+                  className="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition"
+                />
+              </div>
+            )}
 
             <button
               disabled={isUpdating || services.length === 0}
