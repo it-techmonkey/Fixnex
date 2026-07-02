@@ -48,7 +48,7 @@ export const InvoiceEmail = ({
           <Section style={header}>
             <Row>
               <Column style={headerLogoColumn}>
-                <Img src={`${process.env.NEXT_PUBLIC_APP_URL || "https://fixnex.ae"}/logo.webp`} alt="Fixnex" width="100" height="60" />
+                <Heading style={headerTitle}>FIXNEX</Heading>
               </Column>
               <Column style={headerTextColumn}>
                 <Text style={headerSubtitle}>RECEIPT</Text>
