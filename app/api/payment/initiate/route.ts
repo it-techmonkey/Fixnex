@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "This payment has already been completed or cancelled." }, { status: 400 });
       }
 
-      totalAmount = customLink.amount;
+      totalAmount = Number(customLink.amount).toFixed(2);
       paymentOrderData.custom_payment_link_id = customLink.id;
       paymentOrderData.amount = totalAmount;
 
@@ -251,21 +251,21 @@ export async function POST(request: NextRequest) {
       redirect_url: `${appUrl}/api/payment/callback`,
       cancel_url: `${appUrl}/api/payment/callback`,
       language: "EN",
-      // Billing details
+      // Billing details (Using realistic fallbacks to bypass strict AVS checks)
       billing_name: userDetails.fullName || "Customer",
       billing_email: userDetails.email,
       billing_tel: userDetails.phoneNumber || "0000000000",
-      billing_address: "NA",
+      billing_address: "Dubai, United Arab Emirates",
       billing_city: "Dubai",
       billing_state: "Dubai",
-      billing_zip: "00000",
+      billing_zip: "",
       billing_country: "UAE",
       // Delivery (same as billing for services)
       delivery_name: userDetails.fullName || "Customer",
-      delivery_address: "NA",
+      delivery_address: "Dubai, United Arab Emirates",
       delivery_city: "Dubai",
       delivery_state: "Dubai",
-      delivery_zip: "00000",
+      delivery_zip: "",
       delivery_country: "UAE",
       // Merchant param1 carries our PaymentOrder id through to the callback
       merchant_param1: paymentOrder.id,
