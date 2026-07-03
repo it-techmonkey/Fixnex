@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { GoogleLogin } from "@react-oauth/google";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
@@ -83,6 +84,33 @@ const SignupPage = () => {
     } catch (err) {
       console.error("Signup error:", err);
       setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setError(data?.message || "Google signup failed.");
+        return;
+      }
+
+      alert("Signup successful! Redirecting to the home page.");
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred during Google signup.");
     } finally {
       setLoading(false);
     }
@@ -236,7 +264,21 @@ const SignupPage = () => {
               </button>
             </form>
 
-            <p className="text-center text-sm text-white/65">
+            <div className="relative mt-8 flex items-center gap-4 before:h-px before:flex-1 before:bg-white/10 after:h-px after:flex-1 after:bg-white/10">
+              <span className="text-xs font-medium text-white/50 uppercase tracking-widest">or</span>
+            </div>
+            
+            <div className="mt-6 flex justify-center w-full [&>div]:w-full [&>div>div]:!w-full [&_iframe]:!w-full">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError("Google signup failed.")}
+                theme="filled_black"
+                shape="pill"
+                width="100%"
+              />
+            </div>
+
+            <p className="text-center text-sm text-white/65 mt-6">
               Already have an account?{' '}
               <Link href="/login" className="text-blue-400 transition hover:text-blue-300">
                 Log in instead

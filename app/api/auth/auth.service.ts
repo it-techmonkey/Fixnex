@@ -1,5 +1,7 @@
 import { hashPassword, signAuthToken, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { OAuth2Client } from "google-auth-library";
+import { AuthProvider } from "@prisma/client";
 
 type Nullable<T> = T | null | undefined;
 
@@ -24,7 +26,8 @@ type UserWithPassword = {
   role: string;
   createdAt: Date;
   updatedAt: Date;
-  passwordHash: string;
+  passwordHash: string | null;
+  authProvider: AuthProvider;
 };
 
 type PublicUser = Omit<UserWithPassword, "passwordHash">;
@@ -95,6 +98,10 @@ export class AuthService {
     if (!user) {
       throw new AuthError("Invalid email or password.", 401);
     }
+    
+    if (!user.passwordHash) {
+      throw new AuthError("Please log in using Google.", 401);
+    }
 
     const isValidPassword = await verifyPassword(password, user.passwordHash);
     if (!isValidPassword) {
@@ -107,6 +114,48 @@ export class AuthService {
     // Auto-link any past guest bookings
     await this.autoLinkGuestBookings(user.id, email);
 
+    return { user: publicUser, token };
+  }
+
+  async googleLogin(idToken: string): Promise<AuthSuccess> {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      throw new AuthError("Google Login is not configured on the server.", 500);
+    }
+
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: clientId,
+    });
+    
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new AuthError("Invalid Google token payload.", 400);
+    }
+    
+    const email = this.normalizeEmail(payload.email);
+    let user = await this.findUserByEmail(email);
+    
+    if (!user) {
+      const fullName = this.normalizeString(payload.name) || "Google User";
+      const createdUser = await this.createUserWithCart({
+        email,
+        passwordHash: null,
+        fullName,
+        phoneNumber: null,
+        countryCode: null,
+        authProvider: "GOOGLE",
+      });
+      user = { ...createdUser, passwordHash: null }; // Type compatibility
+    }
+
+    const token = signAuthToken({ userId: user.id });
+    
+    await this.autoLinkGuestBookings(user.id, email);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash: _passwordHash, ...publicUser } = user;
     return { user: publicUser, token };
   }
 
@@ -154,16 +203,18 @@ export class AuthService {
         createdAt: true,
         updatedAt: true,
         passwordHash: true,
+        authProvider: true,
       },
     });
   }
 
   private async createUserWithCart(payload: {
     email: string;
-    passwordHash: string;
+    passwordHash: string | null;
     fullName: string;
     phoneNumber: string | null;
     countryCode: string | null;
+    authProvider?: AuthProvider;
   }): Promise<PublicUser> {
     const result = await this.client.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
@@ -177,6 +228,7 @@ export class AuthService {
           role: true,
           createdAt: true,
           updatedAt: true,
+          authProvider: true,
         },
       });
 
@@ -223,6 +275,7 @@ export class AuthService {
         role: true,
         createdAt: true,
         updatedAt: true,
+        authProvider: true,
       },
     });
   }

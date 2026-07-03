@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import ScrollToTopButton from "./components/layout/ScrollToTopButton";
+import { GoogleProvider } from "./components/providers/GoogleProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -116,10 +117,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased bg-black `}
       >
-        {/* <Header /> */}
-        {children}
-        {/* <Footer/> */}
-        <ScrollToTopButton />
+        <GoogleProvider>
+          {/* <Header /> */}
+          {children}
+          {/* <Footer/> */}
+          <ScrollToTopButton />
+        </GoogleProvider>
       </body>
     </html>
   );

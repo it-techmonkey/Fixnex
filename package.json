@@ -14,9 +14,11 @@
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "@react-email/components": "^1.0.12",
+    "@react-oauth/google": "^0.13.5",
     "@tailwindcss/vite": "^4.1.16",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
+    "google-auth-library": "^10.9.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.23.0",
     "next": "^16.0.7",

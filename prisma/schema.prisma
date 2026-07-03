@@ -16,7 +16,8 @@ datasource db {
 model User {
   id               String            @id @default(cuid())
   email            String            @unique
-  passwordHash     String
+  passwordHash     String?
+  authProvider     AuthProvider      @default(LOCAL)
   fullName         String
   countryCode      String?           @db.VarChar(8)
   phoneNumber      String?           @db.VarChar(20)
@@ -32,6 +33,11 @@ model User {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
 }
 
 model Service {
