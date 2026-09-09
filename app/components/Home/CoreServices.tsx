@@ -4,9 +4,16 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Icons from '@/app/components/icons';
-import serviceData from '@/app/db/service.json';
+import rawServiceData from '@/app/db/service.json';
+import { HIDDEN_CATEGORIES } from '@/app/db/hidden-categories';
 import { slugify } from '@/app/utils/slugify';
 import { getServiceImage } from '@/app/services/service-images';
+
+// TEMP: hide the categories listed in HIDDEN_CATEGORIES from the homepage.
+// Restore by clearing that array in app/db/hidden-categories.ts.
+const serviceData = rawServiceData.filter(
+  (category) => !HIDDEN_CATEGORIES.includes(category.category),
+);
 
 interface SelectedService {
   name: string;
