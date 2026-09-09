@@ -1,48 +1,92 @@
-[
-  {
-    "plan": "FixLite",
-    "idealFor": "Apartments & tenants",
-    "features": [
-      "2 repair visits monthly",
-      "Priority scheduling",
-      "Essential maintenance",
-      "Basic support",
-      "Standard response time"
-    ],
-    "price": 199,
-    "period": "month",
-    "popular": false
+{
+  "step": 150,
+  "header": {
+    "title": "Choose your plan",
+    "subtitle": "One fixed monthly fee covers your property — no call-out charges, no quotes to chase.",
+    "note": "A single repair call-out in Dubai typically costs AED 250–400.",
+    "step1Label": "What are you maintaining?",
+    "step2Label": "Choose your level of cover",
+    "footnote": "Cancel any time. No lock-in contract."
   },
-  {
-    "plan": "FixPro",
-    "idealFor": "Families & offices",
-    "features": [
-      "Unlimited service requests",
-      "Full AI diagnostics",
-      "Faster response time",
-      "Preventive maintenance",
-      "Dedicated support line",
-      "Priority booking"
-    ],
-    "price": 399,
-    "period": "month",
-    "popular": true
-  },
-  {
-    "plan": "FixMax",
-    "idealFor": "Villas & buildings",
-    "features": [
-      "24/7 emergency support",
-      "Full IoT integration",
-      "Emergency coverage",
-      "Predictive analytics",
-      "Personal account manager",
-      "VIP priority service",
-      "Unlimited visits"
-    ],
-    "price": 699,
-    "period": "month",
-    "popular": false
-  }
-]
-
+  "propertyTypes": [
+    { "id": "apartment", "label": "Apartments and studios", "startingPrice": 199 },
+    { "id": "family", "label": "Family apartments and townhouses", "startingPrice": 399 },
+    { "id": "villa", "label": "Villas", "startingPrice": 699 }
+  ],
+  "facilities": [
+    "Swimming pool",
+    "Jacuzzi",
+    "Sauna",
+    "Steam room",
+    "Smart home system",
+    "Garden & landscaping",
+    "Water tank & pump",
+    "Private lift"
+  ],
+  "plans": [
+    {
+      "id": "fixlite",
+      "plan": "FixLite",
+      "idealFor": "Essential cover",
+      "mobileSummary": "Essential cover · 2 visits a month",
+      "type": "subscription",
+      "period": "month",
+      "recommended": false,
+      "cta": "Subscribe to FixLite",
+      "prices": { "apartment": 199, "family": 399, "villa": 699 },
+      "priceLabel": null,
+      "features": [
+        "2 scheduled visits a month",
+        "Response within [X] hours",
+        "Labour included, parts at cost",
+        "Support during business hours"
+      ],
+      "excluded": [
+        "No emergency cover",
+        "No preventive checks"
+      ]
+    },
+    {
+      "id": "fixpro",
+      "plan": "FixPro",
+      "idealFor": "Complete cover",
+      "mobileSummary": "Complete cover · unlimited requests",
+      "type": "subscription",
+      "period": "month",
+      "recommended": true,
+      "cta": "Subscribe to FixPro",
+      "prices": { "apartment": 349, "family": 549, "villa": 849 },
+      "priceLabel": null,
+      "features": [
+        "Unlimited service requests",
+        "Response within [X] hours",
+        "Labour included, parts at cost",
+        "Dedicated support line",
+        "Priority for emergencies",
+        "Quarterly preventive checks"
+      ],
+      "excluded": []
+    },
+    {
+      "id": "fixmax",
+      "plan": "FixMax",
+      "idealFor": "Tailored to your property",
+      "mobileSummary": "Pool, jacuzzi, sauna, smart systems",
+      "type": "enquiry",
+      "period": "month",
+      "recommended": false,
+      "cta": "Get my quote",
+      "prices": { "apartment": null, "family": null, "villa": null },
+      "priceLabel": "Custom quote",
+      "features": [
+        "Everything in FixPro",
+        "Pool and water features",
+        "Jacuzzi, sauna and steam",
+        "Smart home systems",
+        "Garden and landscaping",
+        "Personal account manager"
+      ],
+      "excluded": []
+    }
+  ]
+}
