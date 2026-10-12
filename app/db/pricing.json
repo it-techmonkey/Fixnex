@@ -37,7 +37,7 @@
       "priceLabel": null,
       "features": [
         "2 scheduled visits a month",
-        "Response within [X] hours",
+        "Response within 24 hours",
         "Labour included, parts at cost",
         "Support during business hours"
       ],
@@ -59,7 +59,7 @@
       "priceLabel": null,
       "features": [
         "Unlimited service requests",
-        "Response within [X] hours",
+        "Response within 24 hours",
         "Labour included, parts at cost",
         "Dedicated support line",
         "Priority for emergencies",

@@ -1,8 +1,7 @@
 require("dotenv").config({ path: ".env" }); // Load env variables
 const { Resend } = require("resend");
 
-// Hardcode API key for testing script only (in production it comes from .env)
-const resend = new Resend("re_JVa7cpke_ACNxFy9egUm2MRpBhe7XS2ew");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function testReactEmail() {
   console.log("Compiling and sending React email...");

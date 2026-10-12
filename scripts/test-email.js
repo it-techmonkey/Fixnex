@@ -1,7 +1,7 @@
+require("dotenv").config({ path: ".env" }); // Load env variables
 const { Resend } = require("resend");
 
-// Hardcode API key for testing script only (in production it comes from .env)
-const resend = new Resend("re_JVa7cpke_ACNxFy9egUm2MRpBhe7XS2ew");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // In this simple test script, we just use raw HTML since we can't easily compile React outside of Next.js here.
 // But in the real app, it uses the beautiful React component!

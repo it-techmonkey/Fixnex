@@ -52,6 +52,8 @@ const PlansPricing = () => {
   const [formData, setFormData] = useState(emptyLead);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [errors, setErrors] = useState({});
 
   const selectedProperty = propertyTypes.find((t) => t.id === propertyType);
@@ -68,6 +70,7 @@ const PlansPricing = () => {
     setFormData(emptyLead);
     setSelectedFacilities([]);
     setErrors({});
+    setSubmitError('');
   };
 
   const handleCloseModal = () => {
@@ -77,6 +80,7 @@ const PlansPricing = () => {
     setFormData(emptyLead);
     setSelectedFacilities([]);
     setErrors({});
+    setSubmitError('');
   };
 
   const validateForm = () => {
@@ -102,13 +106,12 @@ const PlansPricing = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (isSubmitting || !validateForm()) return;
 
-    // TODO (Phase 4): send this payload to a real endpoint.
-    // Subscription plans -> checkout with recurring monthly mandate.
-    // FixMax -> enquiry queue / sales email.
+    // TODO (Phase 4): subscription plans -> checkout with recurring monthly mandate.
+    // For now every plan is sent to the team as a lead email.
     const payload = {
       planId: selectedPlan?.id,
       planName: selectedPlan?.plan,
@@ -119,12 +122,30 @@ const PlansPricing = () => {
       facilities: isEnquiry ? selectedFacilities : undefined,
       ...formData,
     };
-    if (typeof window !== 'undefined') {
-      console.info('FixNex plan request', payload);
-    }
 
-    setIsSubmitted(true);
-    setTimeout(handleCloseModal, 3000);
+    setIsSubmitting(true);
+    setSubmitError('');
+    try {
+      const response = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.message || 'We could not send your request right now. Please try again later.');
+      }
+      setIsSubmitted(true);
+      setTimeout(handleCloseModal, 3000);
+    } catch (error) {
+      setSubmitError(
+        error instanceof TypeError
+          ? 'We could not send your request. Please check your connection and try again.'
+          : error.message
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -494,11 +515,17 @@ const PlansPricing = () => {
 
                 {/* Footer */}
                 <div className="shrink-0 px-6 sm:px-8 py-4 border-t border-white/[0.08] bg-[#0a0f1f]">
+                  {submitError && (
+                    <p role="alert" className="mb-3 text-red-400 text-xs font-['Space_Grotesk']">
+                      {submitError}
+                    </p>
+                  )}
                   <button
                     type="submit"
-                    className="w-full px-6 py-3.5 rounded-xl bg-gradient-to-b from-sky-400 to-blue-500 text-white text-sm font-semibold font-['Space_Grotesk'] border border-sky-300/50 shadow-[0_4px_8.7px_0_#000205_inset] hover:from-sky-300 hover:to-blue-400 hover:shadow-lg hover:shadow-sky-500/20 transition-all duration-200 cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full px-6 py-3.5 rounded-xl bg-gradient-to-b from-sky-400 to-blue-500 text-white text-sm font-semibold font-['Space_Grotesk'] border border-sky-300/50 shadow-[0_4px_8.7px_0_#000205_inset] hover:from-sky-300 hover:to-blue-400 hover:shadow-lg hover:shadow-sky-500/20 transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {isEnquiry ? 'Send enquiry' : 'Continue'}
+                    {isSubmitting ? 'Sending…' : isEnquiry ? 'Send enquiry' : 'Continue'}
                   </button>
                 </div>
               </form>
