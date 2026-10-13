@@ -27,7 +27,7 @@ const footerColumns = [
     links: [
       { label: "Downloads", href: "/downloads" },
       { label: "Documentation", href: "/docs" },
-      { label: "Contact", href: "/contact" },
+      { label: "Contact", href: "mailto:info@fixnex.ae" },
     ],
   },
 ];

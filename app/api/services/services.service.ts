@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { HIDDEN_CATEGORIES } from "@/app/db/hidden-categories";
 
 type ServiceFilters = {
   search?: string;
@@ -25,6 +26,16 @@ export class ServicesService {
         name: {
           contains: filters.category,
           mode: "insensitive",
+        },
+      };
+    }
+
+    // TEMP: exclude categories hidden from the live site (Sept 2026).
+    // Restore by clearing HIDDEN_CATEGORIES in app/db/hidden-categories.ts.
+    if (HIDDEN_CATEGORIES.length > 0) {
+      where.NOT = {
+        category: {
+          name: { in: HIDDEN_CATEGORIES },
         },
       };
     }
