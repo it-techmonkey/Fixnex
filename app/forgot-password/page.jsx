@@ -15,13 +15,17 @@ const ForgotPasswordPage = () => {
   // When already signed in, the link goes to that account's email and nothing needs typing.
   const [checkingSession, setCheckingSession] = useState(true);
   const [signedInEmail, setSignedInEmail] = useState("");
+  const [signedInRole, setSignedInRole] = useState("");
 
   useEffect(() => {
     let active = true;
     fetch("/api/auth/session", { credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (active && data?.user?.email) setSignedInEmail(data.user.email);
+        if (active && data?.user?.email) {
+          setSignedInEmail(data.user.email);
+          setSignedInRole(data.user.role ?? "");
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -33,6 +37,7 @@ const ForgotPasswordPage = () => {
   }, []);
 
   const targetEmail = signedInEmail || email;
+  const accountHref = signedInRole === "ADMIN" ? "/admin-dashboard/account" : "/account";
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -86,7 +91,7 @@ const ForgotPasswordPage = () => {
                 30 minutes. Check your spam folder if you do not see it.
               </p>
               <Link
-                href={signedInEmail ? "/admin-dashboard/account" : "/login"}
+                href={signedInEmail ? accountHref : "/login"}
                 className="block w-full rounded-xl border border-white/15 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 {signedInEmail ? "Back to account" : "Back to sign in"}
@@ -131,7 +136,7 @@ const ForgotPasswordPage = () => {
               <p className="text-center text-sm text-white/65">
                 {signedInEmail ? "Changed your mind?" : "Remembered it?"}{" "}
                 <Link
-                  href={signedInEmail ? "/admin-dashboard/account" : "/login"}
+                  href={signedInEmail ? accountHref : "/login"}
                   className="text-blue-400 transition hover:text-blue-300"
                 >
                   {signedInEmail ? "Back to account" : "Back to sign in"}

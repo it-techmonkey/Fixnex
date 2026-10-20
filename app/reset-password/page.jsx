@@ -4,10 +4,11 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "../components/layout/Header";
+import PasswordInput from "../components/common/PasswordInput";
 import { PASSWORD_RULES, validatePassword } from "@/lib/passwordPolicy";
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
+  "w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
 
 const ResetPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -102,8 +103,8 @@ const ResetPasswordForm = () => {
 
       <label className="block text-sm font-medium text-white/70">
         New password
-        <input
-          type="password"
+        <PasswordInput
+          wrapperClassName="mt-2"
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
           autoComplete="new-password"
@@ -122,8 +123,8 @@ const ResetPasswordForm = () => {
 
       <label className="block text-sm font-medium text-white/70">
         Confirm new password
-        <input
-          type="password"
+        <PasswordInput
+          wrapperClassName="mt-2"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           autoComplete="new-password"
