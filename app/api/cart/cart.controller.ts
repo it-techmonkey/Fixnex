@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CartService } from "./cart.service";
+import { forbidden, isAdminUser, requireUser } from "@/lib/authz";
 
 type UpdateCartBody = {
   serviceIds?: string[];
@@ -8,11 +9,15 @@ type UpdateCartBody = {
 export class CartController {
   constructor(private readonly service = new CartService()) {}
 
-  async detail(_request: NextRequest, userId: string) {
+  async detail(request: NextRequest, userId: string) {
     try {
       if (!userId) {
         return NextResponse.json({ message: "User ID is required." }, { status: 400 });
       }
+
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+      if (!isAdminUser(auth.user) && auth.user.id !== userId) return forbidden();
 
       const cart = await this.service.getCartByUserId(userId);
       if (!cart) {
@@ -40,6 +45,10 @@ export class CartController {
       if (!userId) {
         return NextResponse.json({ message: "User ID is required." }, { status: 400 });
       }
+
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+      if (!isAdminUser(auth.user) && auth.user.id !== userId) return forbidden();
 
       const body = (await request.json()) as UpdateCartBody;
       const serviceIds = this.normalizeServiceIds(body?.serviceIds);

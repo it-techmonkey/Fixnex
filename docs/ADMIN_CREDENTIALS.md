@@ -1,4 +1,4 @@
-# Example Admin Login Credentials
+# Admin Login
 
 ## How user vs admin is decided
 
@@ -12,24 +12,24 @@
 
 ---
 
-Use these credentials to sign in as an admin (e.g. for development or testing).
-
-| Field     | Value            |
-| --------- | -----------------|
-| **Email** | `admin@fixnex.com` |
-| **Password** | `Admin@123`   |
+There is no default admin password. The password is never stored in this repository.
 
 ## Creating the admin user
 
-If the admin user does not exist yet, run:
+Choose a strong password (at least 8 characters, with a letter and a number) and run:
 
 ```bash
-npm run seed:admin
+ADMIN_EMAIL=admin@fixnex.com ADMIN_PASSWORD='choose-a-strong-password' npm run seed:admin
 ```
 
-Then log in at your app’s login page with the credentials above.
+Then log in at the app's login page with that email and password.
 
-**Security:** Change the password after first login in production. Do not use these credentials in production as-is.
+## Changing or recovering the password
+
+- **Know the current password:** sign in, open **Admin > Account** and use *Change password*.
+- **Forgot it:** use *Forgot password?* on the login page. A reset link is emailed to the account address.
+
+**Security:** Never share the admin password, and do not reuse it on other sites.
 
 ---
 

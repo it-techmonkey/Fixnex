@@ -22,17 +22,16 @@ export async function POST(request: NextRequest) {
       {
         message: "Login successful.",
         user,
-        token,
       },
       { status: 200 }
     );
-    
+
     setAuthCookie(response, token);
-    
+
     return response;
   } catch (error: any) {
     console.error("Google login error:", error);
-    
+
     // Check if it's our custom AuthError
     if (error.name === "AuthError" || error.status) {
       return NextResponse.json(

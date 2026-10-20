@@ -23,10 +23,12 @@ model User {
   countryCode      String?           @db.VarChar(8)
   phoneNumber      String?           @db.VarChar(20)
   role             UserRole          @default(USER)
+  passwordChangedAt DateTime?        // sessions issued before this are rejected
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   bookings         Booking[]
   cart             Cart?
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -193,4 +195,27 @@ model IdCounter {
   value Int    @default(0)
 
   @@map("id_counters")
+}
+
+// One-time password reset links. Only a hash of the token is stored.
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  user_id    String
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  token_hash String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
+}
+
+// Counters for throttling login / password reset attempts.
+model RateLimit {
+  key      String   @id
+  count    Int      @default(0)
+  reset_at DateTime
+
+  @@map("rate_limits")
 }

@@ -137,7 +137,7 @@ const LoginForm = () => {
               />
               Keep me signed in
             </label>
-            <Link href="#" className="text-blue-400 transition hover:text-blue-300">
+            <Link href="/forgot-password" className="text-blue-400 transition hover:text-blue-300">
               Forgot password?
             </Link>
           </div>

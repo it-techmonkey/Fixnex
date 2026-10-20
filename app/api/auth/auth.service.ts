@@ -1,6 +1,7 @@
 import { hashPassword, signAuthToken, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateCustomerCode } from "@/lib/readableIds";
+import { checkRateLimit, clearRateLimit, formatRetryAfter, recordRateLimitHit } from "@/lib/rateLimit";
 import { OAuth2Client } from "google-auth-library";
 import { AuthProvider } from "@prisma/client";
 
@@ -37,6 +38,13 @@ export type AuthSuccess = {
   user: PublicUser;
   token: string;
 };
+
+// Real bcrypt hash of a random string. Compared against when the email is unknown so
+// login takes the same time whether or not an account exists.
+const DUMMY_PASSWORD_HASH = "$2b$12$xA3h2hhfE7sviMlgONGRc.zNh8DhytI492Fxot/Mi7zjtU4bO3gOq";
+const LOGIN_WINDOW_SECONDS = 15 * 60;
+const LOGIN_MAX_FAILURES_PER_ACCOUNT_IP = 5;
+const LOGIN_MAX_FAILURES_PER_IP = 20;
 
 export class AuthError extends Error {
   constructor(message: string, public readonly status: number) {
@@ -87,7 +95,7 @@ export class AuthService {
     return { user, token };
   }
 
-  async login(request: LoginRequest): Promise<AuthSuccess> {
+  async login(request: LoginRequest, meta: { ip?: string } = {}): Promise<AuthSuccess> {
     const email = this.normalizeEmail(request.email);
     const password = this.normalizeString(request.password);
 
@@ -95,19 +103,46 @@ export class AuthService {
       throw new AuthError("Email and password are required.", 400);
     }
 
+    // Throttle guessing: failures are counted per email+IP and per IP.
+    const ip = meta.ip ?? "unknown";
+    const accountKey = `login:${email}:${ip}`;
+    const ipKey = `login-ip:${ip}`;
+    const [accountLimit, ipLimit] = await Promise.all([
+      checkRateLimit(accountKey, LOGIN_MAX_FAILURES_PER_ACCOUNT_IP),
+      checkRateLimit(ipKey, LOGIN_MAX_FAILURES_PER_IP),
+    ]);
+    if (accountLimit.limited || ipLimit.limited) {
+      const wait = Math.max(accountLimit.retryAfterSeconds, ipLimit.retryAfterSeconds);
+      throw new AuthError(
+        `Too many failed login attempts. Try again in ${formatRetryAfter(wait)}.`,
+        429
+      );
+    }
+
+    const fail = async (): Promise<never> => {
+      await Promise.all([
+        recordRateLimitHit(accountKey, LOGIN_WINDOW_SECONDS),
+        recordRateLimitHit(ipKey, LOGIN_WINDOW_SECONDS),
+      ]);
+      throw new AuthError("Invalid email or password.", 401);
+    };
+
     const user = await this.findUserByEmail(email);
     if (!user) {
-      throw new AuthError("Invalid email or password.", 401);
+      await verifyPassword(password, DUMMY_PASSWORD_HASH);
+      return fail();
     }
-    
+
     if (!user.passwordHash) {
       throw new AuthError("Please log in using Google.", 401);
     }
 
     const isValidPassword = await verifyPassword(password, user.passwordHash);
     if (!isValidPassword) {
-      throw new AuthError("Invalid email or password.", 401);
+      return fail();
     }
+
+    await clearRateLimit(accountKey);
 
     const token = signAuthToken({ userId: user.id });
     const { passwordHash: _passwordHash, ...publicUser } = user;
@@ -129,15 +164,20 @@ export class AuthService {
       idToken,
       audience: clientId,
     });
-    
+
     const payload = ticket.getPayload();
     if (!payload || !payload.email) {
       throw new AuthError("Invalid Google token payload.", 400);
     }
-    
+    // Never trust an email Google has not verified: it could be used to take over an
+    // existing account (including an admin) that has the same address.
+    if (payload.email_verified !== true) {
+      throw new AuthError("Your Google email address is not verified.", 401);
+    }
+
     const email = this.normalizeEmail(payload.email);
     let user = await this.findUserByEmail(email);
-    
+
     if (!user) {
       const fullName = this.normalizeString(payload.name) || "Google User";
       const createdUser = await this.createUserWithCart({
@@ -152,7 +192,7 @@ export class AuthService {
     }
 
     const token = signAuthToken({ userId: user.id });
-    
+
     await this.autoLinkGuestBookings(user.id, email);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -254,12 +294,12 @@ export class AuthService {
   private async autoLinkGuestBookings(userId: string, email: string) {
     try {
       await this.client.booking.updateMany({
-        where: { 
-          guest_email: email, 
-          user_id: null 
+        where: {
+          guest_email: email,
+          user_id: null
         },
-        data: { 
-          user_id: userId 
+        data: {
+          user_id: userId
         }
       });
     } catch (error) {
