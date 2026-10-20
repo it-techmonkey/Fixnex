@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { generateBookingCode } from "@/lib/readableIds";
 import { BookingStatus, Prisma } from "@prisma/client";
 
 type CreateBookingPayload = {
@@ -88,6 +89,8 @@ export class BookingsService {
 
     if (searchTerm) {
       const orConditions: Prisma.BookingWhereInput[] = [
+        { booking_code: { contains: searchTerm, mode: "insensitive" } },
+        { user: { is: { customer_code: { contains: searchTerm, mode: "insensitive" } } } },
         {
           location: {
             contains: searchTerm,
@@ -153,6 +156,7 @@ export class BookingsService {
               id: true,
               email: true,
               fullName: true,
+              customer_code: true,
             },
           },
         },
@@ -207,6 +211,7 @@ export class BookingsService {
             id: true,
             email: true,
             fullName: true,
+            customer_code: true,
           },
         },
       },
@@ -238,6 +243,7 @@ export class BookingsService {
             id: true,
             email: true,
             fullName: true,
+            customer_code: true,
           },
         },
       },
@@ -257,8 +263,20 @@ export class BookingsService {
     } = payload;
 
     return prisma.$transaction(async (tx) => {
+      const items = bookingCartItemIds.length
+        ? await tx.bookingCartItem.findMany({
+            where: { id: { in: bookingCartItemIds } },
+            select: { services: { select: { name: true } } },
+          })
+        : [];
+      const bookingCode = await generateBookingCode(
+        tx,
+        items.map((item) => item.services?.name)
+      );
+
       const created = await tx.booking.create({
         data: {
+          booking_code: bookingCode,
           user_id: userId ?? null,
           category_name: categoryName ?? null,
           location: location ?? null,
@@ -309,6 +327,7 @@ export class BookingsService {
               id: true,
               email: true,
               fullName: true,
+              customer_code: true,
             },
           },
         },
@@ -382,6 +401,7 @@ export class BookingsService {
                 id: true,
                 email: true,
                 fullName: true,
+                customer_code: true,
               },
             },
           },
@@ -422,6 +442,7 @@ export class BookingsService {
             id: true,
             email: true,
             fullName: true,
+            customer_code: true,
           },
         },
       },

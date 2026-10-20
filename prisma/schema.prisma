@@ -19,6 +19,7 @@ model User {
   passwordHash     String?
   authProvider     AuthProvider      @default(LOCAL)
   fullName         String
+  customer_code    String?           @unique // readable ID, e.g. HARSHALTARWALE001 (new users only)
   countryCode      String?           @db.VarChar(8)
   phoneNumber      String?           @db.VarChar(20)
   role             UserRole          @default(USER)
@@ -69,6 +70,7 @@ model ServiceCategory {
 
 model Booking {
   id             String    @id @default(cuid())
+  booking_code   String?   @unique // readable ID, e.g. FNX-HOME-0042 (new bookings only)
   bookingCartItems BookingCartItem[]
   user_id        String?
   user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
@@ -183,4 +185,12 @@ model CustomPaymentLink {
   payment_order  PaymentOrder?
 
   @@map("custom_payment_links")
-}
+}
+
+// Running numbers for readable IDs (customer codes per name, booking codes).
+model IdCounter {
+  key   String @id
+  value Int    @default(0)
+
+  @@map("id_counters")
+}

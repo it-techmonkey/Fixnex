@@ -32,6 +32,7 @@ type BookingCartItemRecord = {
 
 type BookingRecord = {
   id: string;
+  booking_code?: string | null;
   bookingCartItems: BookingCartItemRecord[];
   scheduled_date: string | null;
   time_slot: string | null;
@@ -330,7 +331,7 @@ const BookingsPage = () => {
         className="bg-[#17181b] border border-gray-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6 hover:border-blue-500/60 transition"
       >
         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3 sm:gap-4 text-white/80 text-xs sm:text-sm">
-          <span className="font-medium font-['Space_Grotesk'] break-all">Booking ID: {booking.id}</span>
+          <span className="font-medium font-['Space_Grotesk'] break-all">Booking ID: {booking.booking_code ?? booking.id}</span>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
             <span className="text-white/70">
               Created:{" "}

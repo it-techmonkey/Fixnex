@@ -1,5 +1,6 @@
 import { hashPassword, signAuthToken, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateCustomerCode } from "@/lib/readableIds";
 import { OAuth2Client } from "google-auth-library";
 import { AuthProvider } from "@prisma/client";
 
@@ -218,7 +219,10 @@ export class AuthService {
   }): Promise<PublicUser> {
     const result = await this.client.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
-        data: payload,
+        data: {
+          ...payload,
+          customer_code: await generateCustomerCode(tx, payload.fullName),
+        },
         select: {
           id: true,
           email: true,
