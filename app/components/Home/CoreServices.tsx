@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import PriceInfo, { servicePriceRows as priceRows } from "../common/PriceInfo";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Icons from '@/app/components/icons';
@@ -325,6 +326,7 @@ const CoreServices = () => {
                         <div className="flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="text-emerald-400 text-xs sm:text-sm font-bold font-['Space_Grotesk']">
                             {typeof service.member_price === 'number' ? `AED ${service.member_price}` : service.member_price}
+                            <PriceInfo className="ml-1.5" title="Price breakdown" rows={priceRows(service)} note="Member price applies to FixNex plan members." />
                           </div>
                           <div className="text-white/60 text-[10px] sm:text-xs font-['Poppins'] text-center">
                             Click to view details
@@ -412,6 +414,7 @@ const CoreServices = () => {
                       {typeof selectedService.member_price === 'number' 
                         ? `AED ${selectedService.member_price}` 
                         : selectedService.member_price}
+                      <PriceInfo className="ml-2" title="Price breakdown" rows={priceRows(selectedService)} note="Member price applies to FixNex plan members." />
                     </div>
                   </div>
 
