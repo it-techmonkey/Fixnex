@@ -9,6 +9,7 @@ type BookingUser = {
   id: string;
   email: string | null;
   fullName: string | null;
+  customer_code?: string | null;
 };
 
 type BookingService = {
@@ -32,6 +33,7 @@ type BookingCartItem = {
 
 type Booking = {
   id: string;
+  booking_code?: string | null;
   category_name: string | null;
   location: string | null;
   service_type: string | null;
@@ -826,7 +828,7 @@ const AdminPageContent = () => {
                                   className="whitespace-nowrap px-2 py-4 sm:px-4 font-medium text-slate-100 align-top border-r border-slate-800/50"
                                 >
                                   <div className="flex flex-col gap-1">
-                                    <span className="text-xs sm:text-sm break-all">{group.bookingId}</span>
+                                    <span className="text-xs sm:text-sm break-all">{group.booking.booking_code ?? group.bookingId}</span>
                                     <span className="text-xs text-slate-400">
                                       {group.services.length} service{group.services.length !== 1 ? "s" : ""}
                                     </span>
@@ -836,7 +838,12 @@ const AdminPageContent = () => {
                                   rowSpan={group.services.length}
                                   className="whitespace-nowrap px-2 py-4 sm:px-4 text-slate-200 align-top border-r border-slate-800/50"
                                 >
-                                  <span className="text-xs sm:text-sm">{getUserDisplayName(group.booking)}</span>
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-xs sm:text-sm">{getUserDisplayName(group.booking)}</span>
+                                    {group.booking.user?.customer_code && (
+                                      <span className="text-xs text-slate-400">{group.booking.user.customer_code}</span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td
                                   rowSpan={group.services.length}
@@ -1427,7 +1434,7 @@ const EditBookingModal = ({
           <div>
             <h2 className="text-xl font-semibold text-white">Edit Booking Services</h2>
             <p className="text-xs text-slate-400 mt-1">
-              Booking ID: {booking.id} • {booking.bookingCartItems.length} service{booking.bookingCartItems.length !== 1 ? "s" : ""}
+              Booking ID: {booking.booking_code ?? booking.id} • {booking.bookingCartItems.length} service{booking.bookingCartItems.length !== 1 ? "s" : ""}
             </p>
           </div>
           <button

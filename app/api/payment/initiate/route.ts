@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionFromRequest } from "@/lib/auth";
+import { getVerifiedUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { BookingCartItemService } from "@/app/api/booking-cart-items/bookingCartItem.service";
 import { encrypt, getCCAvenueUrl, buildRequestParams } from "@/lib/ccavenue";
@@ -27,15 +27,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse + validate body
-    const body = (await request.json()) as { 
-      bookingCartItemIds?: unknown; 
+    const body = (await request.json()) as {
+      bookingCartItemIds?: unknown;
       custom_link_id?: string;
       guestDetails?: { name: string; email: string; phone: string };
       guestCartItems?: any[];
     };
-    
+
     // 3. Verify session (ONLY REQUIRED IF NOT A CUSTOM LINK AND NOT GUEST)
-    const session = getSessionFromRequest(request);
+    const verifiedUser = await getVerifiedUser(request);
+    const session = verifiedUser ? { userId: verifiedUser.id } : null;
     if (!body.custom_link_id && !session && !body.guestDetails) {
       return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
     }
@@ -80,9 +81,9 @@ export async function POST(request: NextRequest) {
         for (const gItem of guestItems) {
            const service = await prisma.service.findUnique({ where: { id: gItem.service_id } });
            if (!service) continue;
-           
+
            const price = service.normal_price;
-           
+
            const createdItem = await prisma.bookingCartItem.create({
              data: {
                service_id: service.id,
@@ -169,9 +170,12 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // 7. Calculate total amount (sum of numeric prices)
+      // 7. Calculate total amount from the service's listed price in the database.
+      // The price stored on a cart item is never trusted for charging.
       const numericPrices = items
-        .map((item: { price: string | null }) => parseFloat(item.price ?? ""))
+        .map((item: { services?: { normal_price: string } | null; price: string | null }) =>
+          parseFloat(item.services?.normal_price ?? item.price ?? "")
+        )
         .filter((p: number) => Number.isFinite(p));
 
       totalAmount =

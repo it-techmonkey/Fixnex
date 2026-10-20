@@ -3,6 +3,7 @@ import { BookingsService } from "./bookings.service";
 import { CartService } from "../cart/cart.service";
 import { BookingCartItemService } from "../booking-cart-items/bookingCartItem.service";
 import { BookingStatus } from "@prisma/client";
+import { forbidden, isAdminUser, requireUser } from "@/lib/authz";
 
 type CreateRequestBody = {
   bookingCartItemIds?: string[];
@@ -51,11 +52,15 @@ export class BookingsController {
     }
   }
 
-  async listByUser(_request: NextRequest, userId: string) {
+  async listByUser(request: NextRequest, userId: string) {
     try {
       if (!userId) {
         return NextResponse.json({ message: "User ID is required." }, { status: 400 });
       }
+
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+      if (!isAdminUser(auth.user) && auth.user.id !== userId) return forbidden();
 
       const bookings = await this.service.getBookingsByUserId(userId);
       return NextResponse.json(
@@ -71,14 +76,17 @@ export class BookingsController {
     }
   }
 
-  async detail(_request: NextRequest, id: string) {
+  async detail(request: NextRequest, id: string) {
     try {
       if (!id) {
         return NextResponse.json({ message: "Booking ID is required." }, { status: 400 });
       }
 
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+
       const booking = await this.service.getBookingById(id);
-      if (!booking) {
+      if (!booking || (!isAdminUser(auth.user) && booking.user_id !== auth.user.id)) {
         return NextResponse.json({ message: "Booking not found." }, { status: 404 });
       }
 
@@ -97,6 +105,9 @@ export class BookingsController {
 
   async create(request: NextRequest) {
     try {
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+
       const body = (await request.json()) as CreateRequestBody;
 
       const bookingCartItemIds = this.normalizeIds(body.bookingCartItemIds);
@@ -132,6 +143,11 @@ export class BookingsController {
           },
           { status: 400 }
         );
+      }
+
+      // Customers may only book their own cart items.
+      if (!isAdminUser(auth.user) && items.some((item) => item.cart?.user_id !== auth.user.id)) {
+        return forbidden();
       }
 
       const uniqueCartIds = new Set(items.map((item) => item.cart?.id).filter(Boolean));
@@ -173,7 +189,8 @@ export class BookingsController {
           items.map((item) => (item.scheduled_date ? item.scheduled_date.toISOString() : null))
         );
 
-      const explicitPrice = this.normalizeOptionalString(body.price);
+      // Customers cannot name their own price; it is always summed from the cart items.
+      const explicitPrice = isAdminUser(auth.user) ? this.normalizeOptionalString(body.price) : null;
       const numericPrices = items
         .map((item) => (item.price ? Number.parseFloat(item.price) : Number.NaN))
         .filter((value) => Number.isFinite(value)) as number[];

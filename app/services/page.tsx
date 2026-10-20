@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PriceInfo, { servicePriceRows } from "@/app/components/common/PriceInfo";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "../components/layout/Footer";
@@ -365,10 +366,13 @@ const ServicesPage = () => {
                           {/* Pricing Section */}
                           <div className="flex flex-col gap-2 sm:gap-3">
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                              <div className="flex flex-col gap-0.5 sm:gap-1">
-                                <span className="text-white/50 text-[10px] sm:text-xs lg:text-sm hidden sm:inline">Starting from</span>
+                              <div className="relative flex flex-col gap-0.5 sm:gap-1">
+                                <span className="text-white/50 text-[10px] sm:text-xs lg:text-sm hidden sm:inline whitespace-nowrap">
+                                  Starting from <PriceInfo className="ml-1.5 -mr-6 text-white" title="Price breakdown" rows={servicePriceRows(service)} note="Member price applies to FixNex plan members." />
+                                </span>
                                 <span className="text-white/95 text-sm sm:text-lg lg:text-2xl font-bold font-['Space_Grotesk'] leading-tight">
                                   {formatPrice(service.normal_price)}
+                                  <PriceInfo className="absolute -right-5 top-0.5 text-white sm:hidden" title="Price breakdown" rows={servicePriceRows(service)} note="Member price applies to FixNex plan members." />
                                 </span>
                               </div>
 

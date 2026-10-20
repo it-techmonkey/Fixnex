@@ -19,13 +19,16 @@ model User {
   passwordHash     String?
   authProvider     AuthProvider      @default(LOCAL)
   fullName         String
+  customer_code    String?           @unique // readable ID, e.g. HARSHALTARWALE001 (new users only)
   countryCode      String?           @db.VarChar(8)
   phoneNumber      String?           @db.VarChar(20)
   role             UserRole          @default(USER)
+  passwordChangedAt DateTime?        // sessions issued before this are rejected
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   bookings         Booking[]
   cart             Cart?
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -69,6 +72,7 @@ model ServiceCategory {
 
 model Booking {
   id             String    @id @default(cuid())
+  booking_code   String?   @unique // readable ID, e.g. FNX-HOME-0042 (new bookings only)
   bookingCartItems BookingCartItem[]
   user_id        String?
   user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
@@ -183,4 +187,35 @@ model CustomPaymentLink {
   payment_order  PaymentOrder?
 
   @@map("custom_payment_links")
-}
+}
+
+// Running numbers for readable IDs (customer codes per name, booking codes).
+model IdCounter {
+  key   String @id
+  value Int    @default(0)
+
+  @@map("id_counters")
+}
+
+// One-time password reset links. Only a hash of the token is stored.
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  user_id    String
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  token_hash String    @unique
+  expires_at DateTime
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
+}
+
+// Counters for throttling login / password reset attempts.
+model RateLimit {
+  key      String   @id
+  count    Int      @default(0)
+  reset_at DateTime
+
+  @@map("rate_limits")
+}

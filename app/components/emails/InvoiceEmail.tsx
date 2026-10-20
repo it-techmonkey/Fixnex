@@ -73,7 +73,7 @@ export const InvoiceEmail = ({
                 <Column style={detailValue}>{customerEmail}</Column>
               </Row>
               <Row style={detailRow}>
-                <Column style={detailLabel}>User ID</Column>
+                <Column style={detailLabel}>Customer ID</Column>
                 <Column style={detailValue}>{customerId}</Column>
               </Row>
             </Section>

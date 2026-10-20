@@ -7,11 +7,11 @@ import { usePathname, useRouter } from "next/navigation";
 type AdminLayoutProps = {
   children: React.ReactNode;
   title?: string;
-  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' | 'payment-links' */
-  currentNav?: 'dashboard' | 'bookings' | 'payments' | 'payment-links';
+  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account' */
+  currentNav?: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account';
 };
 
-const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-links'; label: string; href: string; icon: React.ReactNode }> = [
+const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account'; label: string; href: string; icon: React.ReactNode }> = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -35,6 +35,12 @@ const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-li
     label: 'Payment Links',
     href: '/admin-dashboard/payment-links',
     icon: <LinkIcon className="size-5" />,
+  },
+  {
+    key: 'account',
+    label: 'Account',
+    href: '/admin-dashboard/account',
+    icon: <AccountIcon className="size-5" />,
   },
 ];
 
@@ -105,7 +111,7 @@ export function AdminLayout({ children, title, currentNav }: AdminLayoutProps) {
     );
   }
 
-  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : pathname.includes('/payments') ? 'payments' : 'bookings');
+  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : pathname.includes('/account') ? 'account' : pathname.includes('/payments') ? 'payments' : 'bookings');
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -271,6 +277,15 @@ function PaymentsIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect width="20" height="14" x="2" y="5" rx="2" />
       <line x1="2" x2="22" y1="10" y2="10" />
+    </svg>
+  );
+}
+
+function AccountIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
     </svg>
   );
 }

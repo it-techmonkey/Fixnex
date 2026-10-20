@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { generateBookingCode } from "@/lib/readableIds";
 import { decrypt, parseCCResponse } from "@/lib/ccavenue";
 
 /**
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
           // Fetch the cart items to derive booking fields
           const items = await tx.bookingCartItem.findMany({
             where: { id: { in: paymentOrder.booking_cart_items } },
+            include: { services: { select: { name: true } } },
           });
 
           // Aggregate price (sum of item prices)
@@ -127,6 +129,10 @@ export async function POST(request: NextRequest) {
           // Create the booking
           const booking = await tx.booking.create({
             data: {
+              booking_code: await generateBookingCode(
+                tx,
+                items.map((item: { services: { name: string } | null }) => item.services?.name)
+              ),
               user_id: paymentOrder.user_id,
               guest_name: !paymentOrder.user_id ? (ccData["billing_name"] || "Guest") : null,
               guest_email: !paymentOrder.user_id ? ccData["billing_email"] : null,
@@ -187,6 +193,13 @@ export async function POST(request: NextRequest) {
         const billingName = ccData["billing_name"] || "Valued Customer";
         
         if (billingEmail) {
+          const customer = paymentOrder.user_id
+            ? await prisma.user.findUnique({
+                where: { id: paymentOrder.user_id },
+                select: { customer_code: true },
+              })
+            : null;
+          const customerCode = customer?.customer_code ?? paymentOrder.user_id;
           const { resend } = await import("@/lib/resend");
           const { InvoiceEmail } = await import("@/app/components/emails/InvoiceEmail");
           const { render } = await import("@react-email/components");
@@ -194,7 +207,7 @@ export async function POST(request: NextRequest) {
           const htmlOutput = await render(InvoiceEmail({
             customerName: billingName,
             customerEmail: billingEmail,
-            customerId: paymentOrder.user_id || "Guest",
+            customerId: customerCode || "Guest",
             orderId: orderId,
             transactionId: bankRefNo || trackingId || "N/A",
             amount: paymentOrder.amount,

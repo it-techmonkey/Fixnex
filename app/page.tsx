@@ -269,14 +269,16 @@ export default function Home() {
         </div>
       </div>
   
-      {/* Our Core services */}
-          <div id="core-services">
-            <CoreServices/>
-          </div>
+      {/* Plans & Pricing */}
           <div className="bg-black flex justify-center items-center">
           <div id="plans-pricing" className="w-full">
             <PlansPricing/>
           </div>
+          </div>
+
+      {/* Our Core services */}
+          <div id="core-services">
+            <CoreServices/>
           </div>
   
           

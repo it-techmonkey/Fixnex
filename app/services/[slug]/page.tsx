@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import PriceInfo, { servicePriceRows } from "@/app/components/common/PriceInfo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/app/components/layout/Header";
@@ -924,6 +925,7 @@ const ServiceDetailPage = () => {
                       <p className="text-gray-400 text-xs sm:text-sm mb-1">Starting from</p>
                       <p className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold font-['Space_Grotesk']">
                         {formatPrice(service.normal_price)}
+                        <PriceInfo className="ml-2 w-5 h-5 text-xs" title="Price breakdown" rows={servicePriceRows(service)} note="Member price applies to FixNex plan members." />
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto md:shrink-0">
@@ -1272,6 +1274,7 @@ const ServiceDetailPage = () => {
                   <span className="text-white/60 text-base ">Total Price:</span>
                   <span className="text-cyan-400 text-xl font-bold font-['Space_Grotesk']">
                     {formatPrice(bookingDetails.price)}
+                    <PriceInfo className="ml-2" title="Total price" rows={[{ label: "Service", value: bookingDetails.service ?? "Selected service" }, { label: "Total", value: formatPrice(bookingDetails.price), strong: true }]} />
                   </span>
                 </div>
               </div>

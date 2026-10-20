@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { resend } from "@/lib/resend";
 import { InvoiceEmail } from "@/app/components/emails/InvoiceEmail";
 import { render } from "@react-email/components";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const auth = await requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const htmlOutput = await render(InvoiceEmail({
       customerName: "Jane Doe",

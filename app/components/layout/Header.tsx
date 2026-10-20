@@ -186,6 +186,18 @@ const Header = () => {
             {session.loading ? (
               <div className="size-6 animate-pulse rounded-full bg-white/40" aria-hidden />
             ) : session.isAuthenticated ? (
+              <>
+              <Link
+                href="/account"
+                aria-label="My account"
+                title="My account"
+                className="text-white transition-opacity hover:opacity-100"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21a8 8 0 0 1 16 0" />
+                </svg>
+              </Link>
               <button
                 onClick={async () => {
                   try {
@@ -204,6 +216,7 @@ const Header = () => {
               >
                 Log Out
               </button>
+              </>
             ) : (
               <Link
                 href="/login"
@@ -315,6 +328,14 @@ const Header = () => {
           {session.loading ? (
             <div className="h-12 w-full animate-pulse rounded-lg bg-white/20" aria-hidden />
           ) : session.isAuthenticated ? (
+            <>
+            <Link
+              href="/account"
+              className="rounded-lg border border-white/20 py-3 text-center text-sm transition hover:bg-white/10"
+              onClick={closeMenu}
+            >
+              My Account
+            </Link>
             <button
               onClick={async () => {
                 try {
@@ -333,6 +354,7 @@ const Header = () => {
             >
               Log Out
             </button>
+            </>
           ) : (
             <Link
               href="/login"

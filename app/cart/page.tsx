@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PriceInfo, { servicePriceRows } from "@/app/components/common/PriceInfo";
 import Header from "@/app/components/layout/Header";
 import Footer from "@/app/components/layout/Footer";
 import Icons from "@/app/components/icons";
@@ -406,6 +407,7 @@ const CartPage = () => {
                           ? svc.normal_price
                           : `AED ${parseFloat(svc.normal_price).toFixed(2)}`}
                       </span>
+                      <PriceInfo className="ml-1.5" title="Price breakdown" rows={servicePriceRows(svc)} note="Member price applies to FixNex plan members." />
                     </p>
                     {/* <p className="text-white/60 text-sm ">
                       Member price:{" "}
@@ -473,7 +475,20 @@ const CartPage = () => {
             <div className="border-t border-gray-700 pt-3 sm:pt-4">
               <div className="flex items-center justify-between text-base sm:text-lg text-white font-semibold font-['Space_Grotesk']">
                 <span>Total</span>
-                <span>{formattedTotal}</span>
+                <span>
+                  {formattedTotal}
+                  <PriceInfo
+                    className="ml-2"
+                    title="Total breakdown"
+                    rows={[
+                      ...services.map((svc) => ({
+                        label: svc.name,
+                        value: isNaN(parseFloat(svc.normal_price)) ? svc.normal_price : `AED ${parseFloat(svc.normal_price).toFixed(2)}`,
+                      })),
+                      { label: "Total", value: formattedTotal, strong: true },
+                    ]}
+                  />
+                </span>
               </div>
             </div>
 

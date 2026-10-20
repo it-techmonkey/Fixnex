@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { BookingCartItemService } from "./bookingCartItem.service";
 import { BookingsService } from "../bookings/bookings.service";
 import { CartService } from "../cart/cart.service";
+import { forbidden, isAdminUser, requireUser } from "@/lib/authz";
+import { prisma } from "@/lib/prisma";
 
 type CreateRequestBody = {
   cartId?: string;
@@ -35,9 +37,32 @@ export class BookingCartItemController {
     private readonly cartService = new CartService()
   ) {}
 
-  async list(_request: NextRequest) {
+  /** Resolves the caller and checks they own (or administer) the cart item. */
+  private async authorizeItem(request: NextRequest, itemId: string) {
+    const auth = await requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    if (isAdminUser(auth.user)) return auth;
+
+    const item = await prisma.bookingCartItem.findUnique({
+      where: { id: itemId },
+      select: { cart: { select: { user_id: true } } },
+    });
+    if (!item || item.cart?.user_id !== auth.user.id) {
+      return NextResponse.json({ message: "Booking cart item not found." }, { status: 404 });
+    }
+    return auth;
+  }
+
+  async list(request: NextRequest) {
     try {
-      const items = await this.service.getAll();
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+
+      // Customers only ever see their own cart items; admins see everything.
+      const allItems = await this.service.getAll();
+      const items = isAdminUser(auth.user)
+        ? allItems
+        : allItems.filter((item) => item.cart?.user_id === auth.user.id);
       return NextResponse.json(
         { message: "Booking cart items fetched successfully.", items },
         { status: 200 }
@@ -53,6 +78,9 @@ export class BookingCartItemController {
 
   async create(request: NextRequest) {
     try {
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+
       const body = (await request.json()) as CreateRequestBody;
 
       const cartId = typeof body.cartId === "string" ? body.cartId.trim() : "";
@@ -71,6 +99,22 @@ export class BookingCartItemController {
         );
       }
 
+      const cart = await prisma.cart.findUnique({
+        where: { id: cartId },
+        select: { user_id: true },
+      });
+      if (!cart || (!isAdminUser(auth.user) && cart.user_id !== auth.user.id)) {
+        return forbidden();
+      }
+
+      const serviceRecord = await prisma.service.findUnique({
+        where: { id: serviceId },
+        select: { normal_price: true },
+      });
+      if (!serviceRecord) {
+        return NextResponse.json({ message: "Service not found." }, { status: 404 });
+      }
+
       const item = await this.service.create({
         cartId,
         serviceId,
@@ -79,7 +123,8 @@ export class BookingCartItemController {
         serviceType,
         scheduledDate,
         timeSlot,
-        price,
+        // The price is always the service's listed price; customers cannot set their own.
+        price: isAdminUser(auth.user) ? price : serviceRecord.normal_price,
       });
 
       return NextResponse.json(
@@ -95,12 +140,15 @@ export class BookingCartItemController {
     }
   }
 
-  async delete(_request: NextRequest, itemId: string) {
+  async delete(request: NextRequest, itemId: string) {
     try {
       const normalizedId = typeof itemId === "string" ? itemId.trim() : "";
       if (!normalizedId) {
         return NextResponse.json({ message: "Booking cart item ID is required." }, { status: 400 });
       }
+
+      const auth = await this.authorizeItem(request, normalizedId);
+      if (auth instanceof NextResponse) return auth;
 
       await this.service.deleteById(normalizedId);
 
@@ -124,6 +172,9 @@ export class BookingCartItemController {
         return NextResponse.json({ message: "Booking cart item ID is required." }, { status: 400 });
       }
 
+      const auth = await this.authorizeItem(request, normalizedId);
+      if (auth instanceof NextResponse) return auth;
+
       const body = (await request.json()) as UpdateRequestBody;
 
       const normalizedPayload = {
@@ -132,7 +183,8 @@ export class BookingCartItemController {
         location: this.normalizeOptionalString(body.location),
         serviceType: this.normalizeOptionalString(body.serviceType),
         categoryName: this.normalizeOptionalString(body.categoryName),
-        price: this.normalizeOptionalString(body.price),
+        // Only admins may change a price; for customers the field is ignored.
+        price: isAdminUser(auth.user) ? this.normalizeOptionalString(body.price) : undefined,
       };
 
       const updated = await this.service.updateById(normalizedId, normalizedPayload);
@@ -155,6 +207,9 @@ export class BookingCartItemController {
 
   async createBookingFromItems(request: NextRequest) {
     try {
+      const auth = await requireUser(request);
+      if (auth instanceof NextResponse) return auth;
+
       const body = (await request.json()) as CreateBookingFromItemsBody;
       const itemIds = this.normalizeIds(body?.bookingCartItemIds);
 
@@ -190,6 +245,11 @@ export class BookingCartItemController {
           },
           { status: 400 }
         );
+      }
+
+      // Customers may only book their own cart items.
+      if (!isAdminUser(auth.user) && items.some((item) => item.cart?.user_id !== auth.user.id)) {
+        return forbidden();
       }
 
       const uniqueCartIds = new Set(items.map((item) => item.cart?.id).filter(Boolean));

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GoogleLogin } from "@react-oauth/google";
 import Header from "../components/layout/Header";
+import PasswordInput from "../components/common/PasswordInput";
 import Footer from "../components/layout/Footer";
 
 const SignupPage = () => {
@@ -215,24 +216,24 @@ const SignupPage = () => {
 
               <label className="block text-sm font-medium text-white/70">
                 Password
-                <input
-                  type="password"
+                <PasswordInput
+              wrapperClassName="mt-2"
                   placeholder="Create a strong password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   required
                 />
               </label>
 
               <label className="block text-sm font-medium text-white/70">
                 Confirm password
-                <input
-                  type="password"
+                <PasswordInput
+              wrapperClassName="mt-2"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   required
                 />
               </label>

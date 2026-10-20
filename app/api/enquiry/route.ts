@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resend } from "@/lib/resend";
+import { checkRateLimit, recordRateLimitHit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/requestMeta";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[\d\s\-\+\(\)]+$/;
@@ -24,6 +26,20 @@ export async function POST(request: NextRequest) {
         { message: "We could not send your request right now. Please try again later." },
         { status: 503 }
       );
+    }
+
+    // Stop the form being used to flood the team inbox (fails open if the limiter is down).
+    try {
+      const key = `enquiry:${getClientIp(request)}`;
+      if ((await checkRateLimit(key, 5)).limited) {
+        return NextResponse.json(
+          { message: "Too many requests. Please try again later." },
+          { status: 429 }
+        );
+      }
+      await recordRateLimitHit(key, 60 * 60);
+    } catch (limitError) {
+      console.error("Enquiry rate limit unavailable:", limitError);
     }
 
     // 2. Parse + validate body

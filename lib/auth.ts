@@ -25,7 +25,7 @@ export const verifyPassword = async (
 };
 
 export const signAuthToken = (payload: object): string => {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: TOKEN_TTL_SECONDS });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: TOKEN_TTL_SECONDS, algorithm: "HS256" });
 };
 
 export const setAuthCookie = (response: NextResponse, token: string) => {
@@ -58,7 +58,7 @@ export type AuthTokenPayload = jwt.JwtPayload & {
 };
 
 export const verifyAuthToken = (token: string): AuthTokenPayload => {
-  return jwt.verify(token, getJwtSecret()) as AuthTokenPayload;
+  return jwt.verify(token, getJwtSecret(), { algorithms: ["HS256"] }) as AuthTokenPayload;
 };
 
 export const getAuthTokenFromRequest = (request: NextRequest): string | null => {
