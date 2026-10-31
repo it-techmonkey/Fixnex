@@ -6,6 +6,35 @@ import Header from "@/app/components/layout/Header";
 import Footer from "@/app/components/layout/Footer";
 import Icons from "@/app/components/icons";
 import { useRouter } from "next/navigation";
+import { redirectToGateway } from "@/app/utils/gateway";
+import { PLAN_NAMES, formatPlanDate, type PlanTierName } from "@/lib/plans";
+
+type QuotedItem = {
+  itemId: string;
+  coverage: "INCLUDED" | "MEMBER" | "NORMAL";
+  price: number;
+  priceText: string | null;
+  normalPrice: number | null;
+  memberPrice: number | null;
+  priority: boolean;
+  note: string | null;
+};
+
+type CartQuote = {
+  items: QuotedItem[];
+  total: number;
+  includedVisits: number;
+  propertyScope: "PLAN" | "OTHER" | null;
+  member: {
+    plan: PlanTierName;
+    propertyArea: string;
+    endsAt: string;
+    visitsAllowed: number | null;
+    visitsUsed: number;
+  } | null;
+};
+
+const aed = (value: number) => `AED ${value.toFixed(2)}`;
 
 type SessionState = {
   loading: boolean;
@@ -55,6 +84,10 @@ const CartPage = () => {
   const [bookingMessage, setBookingMessage] = useState<string | null>(null);
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [guestDetails, setGuestDetails] = useState({ name: "", email: "", phone: "" });
+  // Server-calculated prices for signed-in customers (plan included / member / normal price).
+  const [quote, setQuote] = useState<CartQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [propertyScope, setPropertyScope] = useState<"PLAN" | "OTHER">("PLAN");
 
   const formatDate = (value?: string | null) => {
     if (!value) {
@@ -194,6 +227,45 @@ const CartPage = () => {
     };
   }, [session.loading, session.isAuthenticated, session.userId]);
 
+  const cartItemIds = useMemo(
+    () => services.map((svc) => svc.bookingCartItemId).filter((id): id is string => !!id),
+    [services]
+  );
+
+  const loadQuote = async (ids: string[], scope: "PLAN" | "OTHER") => {
+    if (!session.isAuthenticated || ids.length === 0) {
+      setQuote(null);
+      return null;
+    }
+    setQuoteLoading(true);
+    try {
+      const response = await fetch("/api/checkout/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ bookingCartItemIds: ids, propertyScope: scope }),
+      });
+      if (!response.ok) throw new Error();
+      const data = (await response.json()) as { quote: CartQuote };
+      setQuote(data.quote);
+      return data.quote;
+    } catch {
+      // Prices then show as listed; checkout still charges the correct server price.
+      setQuote(null);
+      return null;
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!session.loading && !cartLoading) loadQuote(cartItemIds, propertyScope);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.loading, session.isAuthenticated, cartLoading, cartItemIds.join(","), propertyScope]);
+
+  const quoteFor = (svc: CartService) =>
+    quote?.items.find((q) => q.itemId === svc.bookingCartItemId) ?? null;
+
   const handleRemoveService = async (serviceId: string) => {
     if (!session.isAuthenticated || !session.userId) {
       const nextServices = services.filter((svc) => svc.id !== serviceId);
@@ -286,7 +358,12 @@ const CartPage = () => {
         alert("We couldn't determine which items to book. Please refresh and try again.");
         return;
       }
-      requestBody = { bookingCartItemIds };
+      requestBody = {
+        bookingCartItemIds,
+        propertyScope,
+        // If prices changed since the customer looked (e.g. plan ended), they see the new prices first.
+        ...(quote ? { expectedTotal: quote.total } : {}),
+      };
     }
 
     try {
@@ -301,36 +378,24 @@ const CartPage = () => {
         body: JSON.stringify(requestBody),
       });
 
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
+        if (data?.code === "PRICE_CHANGED") {
+          await loadQuote(cartItemIds, propertyScope);
+          throw new Error("Your prices have been updated. Please check the new total and try again.");
+        }
         throw new Error(data?.message ?? "Failed to initiate payment.");
       }
 
-      const { encRequest, accessCode, actionUrl } = await response.json() as {
-        encRequest: string;
-        accessCode: string;
-        actionUrl: string;
-      };
+      // Nothing to pay (fully included in the plan): the booking is already confirmed.
+      if (data?.confirmed) {
+        const type = data.paymentStatus === "INCLUDED" ? "included" : "quote";
+        router.push(`/payment/success?orderId=${encodeURIComponent(data.orderId)}&type=${type}`);
+        return;
+      }
 
-      // Build and submit a POST form to redirect the browser to CCAvenue
-      const form = document.createElement("form");
-      form.method = "post";
-      form.action = actionUrl;
-
-      const encInput = document.createElement("input");
-      encInput.type = "hidden";
-      encInput.name = "encRequest";
-      encInput.value = encRequest;
-      form.appendChild(encInput);
-
-      const accessInput = document.createElement("input");
-      accessInput.type = "hidden";
-      accessInput.name = "access_code";
-      accessInput.value = accessCode;
-      form.appendChild(accessInput);
-
-      document.body.appendChild(form);
-      form.submit();
+      // Otherwise go to the CCAvenue payment page.
+      redirectToGateway(data);
     } catch (error) {
       console.error("Failed to initiate payment:", error);
       setBookingMessage(
@@ -343,6 +408,7 @@ const CartPage = () => {
 
 
   const totalPrice = useMemo(() => {
+    if (quote) return quote.total;
     return services.reduce((sum, svc) => {
       const parsed = parseFloat(svc.normal_price);
       if (Number.isNaN(parsed)) {
@@ -350,9 +416,24 @@ const CartPage = () => {
       }
       return sum + parsed;
     }, 0);
-  }, [services]);
+  }, [services, quote]);
 
   const formattedTotal = `AED ${totalPrice.toFixed(2)}`;
+
+  /** Price label for one cart line: from the server quote when available, else the listed price. */
+  const priceLabel = (svc: CartService) => {
+    const q = quoteFor(svc);
+    if (q) return q.priceText ?? aed(q.price);
+    return isNaN(parseFloat(svc.normal_price)) ? svc.normal_price : `AED ${parseFloat(svc.normal_price).toFixed(2)}`;
+  };
+
+  const checkoutLabel = () => {
+    if (isUpdating) return "Processing…";
+    if (quoteLoading) return "Checking prices…";
+    if (session.isAuthenticated && quote && quote.total <= 0) return "Confirm booking";
+    if (session.isAuthenticated && quote) return `Pay ${formattedTotal}`;
+    return "Book Now";
+  };
 
   const renderContent = () => {
     if (session.loading || cartLoading) {
@@ -402,13 +483,46 @@ const CartPage = () => {
                     </h3>
                     <p className="text-white/80 text-sm sm:text-base mt-1">
                       Price:{" "}
-                      <span className="text-white font-semibold">
-                        {isNaN(parseFloat(svc.normal_price))
-                          ? svc.normal_price
-                          : `AED ${parseFloat(svc.normal_price).toFixed(2)}`}
-                      </span>
+                      <span className="text-white font-semibold">{priceLabel(svc)}</span>
+                      {(() => {
+                        const q = quoteFor(svc);
+                        if (q && q.coverage !== "NORMAL" && q.normalPrice !== null && q.price < q.normalPrice) {
+                          return <span className="ml-2 text-white/40 line-through text-sm">{aed(q.normalPrice)}</span>;
+                        }
+                        return null;
+                      })()}
                       <PriceInfo className="ml-1.5" title="Price breakdown" rows={servicePriceRows(svc)} note="Member price applies to FixNex plan members." />
                     </p>
+                    {(() => {
+                      const q = quoteFor(svc);
+                      if (q?.coverage === "INCLUDED") {
+                        return (
+                          <p className="mt-1.5 inline-flex flex-wrap items-center gap-2 text-xs">
+                            <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
+                              Included in your {quote?.member ? PLAN_NAMES[quote.member.plan] : "plan"}
+                            </span>
+                            {q.priority && <span className="rounded-full bg-amber-500/15 px-2.5 py-1 font-semibold text-amber-300 ring-1 ring-amber-500/30">Priority</span>}
+                          </p>
+                        );
+                      }
+                      if (q?.coverage === "MEMBER") {
+                        return (
+                          <p className="mt-1.5 text-xs">
+                            <span className="rounded-full bg-sky-500/15 px-2.5 py-1 font-semibold text-sky-300 ring-1 ring-sky-500/30">Member price</span>
+                            {q.note && <span className="ml-2 text-white/50">{q.note}</span>}
+                          </p>
+                        );
+                      }
+                      if (q?.coverage === "NORMAL" && q.memberPrice !== null && q.normalPrice !== null && q.memberPrice < q.normalPrice) {
+                        return (
+                          <p className="mt-1.5 text-xs text-white/50">
+                            Plan members pay {aed(q.memberPrice)}.{" "}
+                            <a href="/#plans-pricing" className="text-sky-300 hover:text-sky-200">See plans</a>
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                     {/* <p className="text-white/60 text-sm ">
                       Member price:{" "}
                       <span className="text-emerald-400 font-semibold">
@@ -463,14 +577,54 @@ const CartPage = () => {
               {services.map((svc) => (
                 <div key={svc.id} className="flex items-center justify-between text-white/80 text-sm sm:text-base">
                   <span className="truncate pr-2">{svc.name}</span>
-                  <span className="font-semibold font-['Space_Grotesk'] shrink-0">
-                    {isNaN(parseFloat(svc.normal_price))
-                      ? svc.normal_price
-                      : `AED ${parseFloat(svc.normal_price).toFixed(2)}`}
-                  </span>
+                  <span className="font-semibold font-['Space_Grotesk'] shrink-0">{priceLabel(svc)}</span>
                 </div>
               ))}
             </div>
+
+            {quote?.member && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 sm:p-4 space-y-3 text-sm">
+                <p className="text-white">
+                  <span className="font-semibold">{PLAN_NAMES[quote.member.plan]} member</span>
+                  <span className="text-white/60"> · until {formatPlanDate(quote.member.endsAt)}</span>
+                </p>
+                {quote.member.visitsAllowed !== null && (
+                  <p className="text-white/60 text-xs">
+                    Included visits this month: {Math.max(0, quote.member.visitsAllowed - quote.member.visitsUsed)} of{" "}
+                    {quote.member.visitsAllowed} left
+                  </p>
+                )}
+                <fieldset className="space-y-2">
+                  <legend className="text-white/60 text-xs mb-1">Where is this booking for?</legend>
+                  <label className="flex items-center gap-2 text-white/85 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="propertyScope"
+                      checked={propertyScope === "PLAN"}
+                      onChange={() => setPropertyScope("PLAN")}
+                    />
+                    My plan property ({quote.member.propertyArea})
+                  </label>
+                  <label className="flex items-center gap-2 text-white/85 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="propertyScope"
+                      checked={propertyScope === "OTHER"}
+                      onChange={() => setPropertyScope("OTHER")}
+                    />
+                    Another property (member prices)
+                  </label>
+                </fieldset>
+              </div>
+            )}
+
+            {!session.isAuthenticated && (
+              <p className="text-xs text-white/50">
+                Have a FixNex plan?{" "}
+                <a href="/login?redirect=%2Fcart" className="text-sky-300 hover:text-sky-200">Log in</a> to use your included
+                visits and member prices.
+              </p>
+            )}
 
             <div className="border-t border-gray-700 pt-3 sm:pt-4">
               <div className="flex items-center justify-between text-base sm:text-lg text-white font-semibold font-['Space_Grotesk']">
@@ -483,7 +637,7 @@ const CartPage = () => {
                     rows={[
                       ...services.map((svc) => ({
                         label: svc.name,
-                        value: isNaN(parseFloat(svc.normal_price)) ? svc.normal_price : `AED ${parseFloat(svc.normal_price).toFixed(2)}`,
+                        value: priceLabel(svc),
                       })),
                       { label: "Total", value: formattedTotal, strong: true },
                     ]}
@@ -520,12 +674,15 @@ const CartPage = () => {
             )}
 
             <button
-              disabled={isUpdating || services.length === 0}
+              disabled={isUpdating || quoteLoading || services.length === 0}
               onClick={handleCheckout}
               className="w-full py-3 text-sm sm:text-base bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-semibold font-['Space_Grotesk'] transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30"
             >
-              {isUpdating ? "Processing…" : "Book Now"}
+              {checkoutLabel()}
             </button>
+            {session.isAuthenticated && quote && quote.total <= 0 && (
+              <p className="text-xs text-white/50 text-center">Nothing to pay: this booking is included in your plan.</p>
+            )}
 
             {bookingMessage && (
               <div className="p-3 rounded-lg border border-blue-500/40 bg-blue-500/10 text-white/80 text-xs sm:text-sm">

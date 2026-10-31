@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import pricingData from '@/app/db/pricing.json';
 
 const { header, propertyTypes, facilities, plans } = pricingData;
@@ -41,8 +42,29 @@ const formatPrice = (value) => {
 
 const emptyLead = { name: '', email: '', phone: '', message: '' };
 
+// Plan tier (as stored on the server) for each plan card.
+const PLAN_TIER = { fixlite: 'FIXLITE', fixpro: 'FIXPRO', fixmax: 'FIXMAX' };
+
 const PlansPricing = () => {
+  const router = useRouter();
   const recommendedId = plans.find((p) => p.recommended)?.id ?? plans[0]?.id;
+  // Signed-in customer's plan (null = guest or no plan). Lets members manage instead of buying twice.
+  const [membership, setMembership] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/plans/me', { credentials: 'include', cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setMembership(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const currentTier = membership?.current?.plan ?? null;
 
   const [propertyType, setPropertyType] = useState(propertyTypes[0].id);
   const [openCards, setOpenCards] = useState({ [recommendedId]: true });
@@ -63,11 +85,36 @@ const PlansPricing = () => {
     setOpenCards((prev) => ({ ...prev, [planId]: !prev[planId] }));
   };
 
+  // What the button on each card says and does, depending on the customer's current plan.
+  const ctaFor = (plan) => {
+    const tier = PLAN_TIER[plan.id];
+    if (currentTier) {
+      if (tier === currentTier) return { label: 'Manage my plan', href: '/my-plan', current: true };
+      if (currentTier === 'FIXLITE' && tier === 'FIXPRO') return { label: 'Upgrade to FixPro', href: '/my-plan#upgrade' };
+      if (plan.type === 'subscription') return { label: 'View my plan', href: '/my-plan' };
+    }
+    if (plan.type === 'subscription') {
+      return { label: plan.cta, href: `/subscribe?plan=${plan.id}&property=${propertyType}` };
+    }
+    return { label: plan.cta, href: null };
+  };
+
   const handleCtaClick = (plan) => {
+    const cta = ctaFor(plan);
+    if (cta.href) {
+      router.push(cta.href);
+      return;
+    }
     setSelectedPlan(plan);
     setIsModalOpen(true);
     setIsSubmitted(false);
-    setFormData(emptyLead);
+    const profile = membership?.profile;
+    setFormData({
+      ...emptyLead,
+      name: profile?.fullName ?? '',
+      email: profile?.email ?? '',
+      phone: profile?.phoneNumber ? `${profile.countryCode ?? ''} ${profile.phoneNumber}`.trim() : '',
+    });
     setSelectedFacilities([]);
     setErrors({});
     setSubmitError('');
@@ -110,8 +157,7 @@ const PlansPricing = () => {
     e.preventDefault();
     if (isSubmitting || !validateForm()) return;
 
-    // TODO (Phase 4): subscription plans -> checkout with recurring monthly mandate.
-    // For now every plan is sent to the team as a lead email.
+    // Only FixMax (custom quote) uses this form; FixLite / FixPro go to /subscribe and payment.
     const payload = {
       planId: selectedPlan?.id,
       planName: selectedPlan?.plan,
@@ -239,6 +285,7 @@ const PlansPricing = () => {
               const isOpen = !!openCards[plan.id];
               const priceValue = plan.prices?.[propertyType];
               const priceText = plan.priceLabel ?? formatPrice(priceValue);
+              const cta = ctaFor(plan);
 
               return (
                 <div
@@ -250,7 +297,11 @@ const PlansPricing = () => {
                       : 'bg-white/[0.02] outline outline-1 outline-offset-[-1px] outline-white/12'}
                   `}
                 >
-                  {plan.recommended && (
+                  {cta.current ? (
+                    <div className="absolute -top-3 left-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-lg">
+                      Your current plan
+                    </div>
+                  ) : plan.recommended && (
                     <div className="absolute -top-3 left-6 bg-gradient-to-r from-sky-500 to-blue-600 text-white text-[11px] font-semibold px-3 py-1 rounded-full shadow-lg">
                       Most popular
                     </div>
@@ -308,7 +359,7 @@ const PlansPricing = () => {
                           : 'bg-transparent text-sky-300 border border-sky-400/40 hover:bg-sky-400/10'}
                       `}
                     >
-                      {plan.cta}
+                      {cta.label}
                     </button>
 
                     <div className="h-px bg-white/10" />

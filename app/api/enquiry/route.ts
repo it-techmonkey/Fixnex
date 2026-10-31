@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resend } from "@/lib/resend";
+import { prisma } from "@/lib/prisma";
+import { getVerifiedUser } from "@/lib/session";
 import { checkRateLimit, recordRateLimitHit } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/requestMeta";
 
@@ -19,13 +21,9 @@ const asText = (value: unknown, maxLength: number) =>
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Fail fast if email is not configured
+    // 1. Enquiries are saved to the database, so a missing email key only skips the email.
     if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is not configured. Plan enquiries cannot be sent.");
-      return NextResponse.json(
-        { message: "We could not send your request right now. Please try again later." },
-        { status: 503 }
-      );
+      console.error("RESEND_API_KEY is not configured. Plan enquiries will be saved but not emailed.");
     }
 
     // Stop the form being used to flood the team inbox (fails open if the limiter is down).
@@ -108,24 +106,60 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    // 4. Send — Resend returns { error } instead of throwing
-    const { data, error } = await resend.emails.send({
-      from: process.env.ENQUIRY_FROM_EMAIL || "payment@fixnex.ae",
-      to: process.env.ENQUIRY_TO_EMAIL || "info@fixnex.ae",
-      replyTo: email,
-      subject: `New ${planName} ${isEnquiry ? "quote enquiry" : "subscription request"} - ${name}`,
-      html,
-    });
+    // 4. Save first, so the enquiry shows in the admin panel even if the email is missed.
+    let enquiryId: string | null = null;
+    try {
+      const user = await getVerifiedUser(request).catch(() => null);
+      const saved = await prisma.enquiry.create({
+        data: {
+          user_id: user?.id ?? null,
+          name,
+          email,
+          phone,
+          plan_id: asText(body.planId, 40) || planName.toLowerCase(),
+          plan_name: planName,
+          type: isEnquiry ? "enquiry" : "subscription",
+          property_type: asText(body.propertyType, 40) || null,
+          property_label: propertyLabel || null,
+          price: isEnquiry ? null : price || null,
+          facilities,
+          message: message || null,
+        },
+      });
+      enquiryId = saved.id;
+    } catch (saveError) {
+      console.error("Failed to save plan enquiry:", saveError);
+    }
 
-    if (error) {
-      console.error("Failed to send plan enquiry email:", error);
+    // 5. Email the team. Resend returns { error } instead of throwing.
+    let emailSent = false;
+    if (process.env.RESEND_API_KEY) try {
+      const { error } = await resend.emails.send({
+        from: process.env.ENQUIRY_FROM_EMAIL || "payment@fixnex.ae",
+        to: process.env.ENQUIRY_TO_EMAIL || "info@fixnex.ae",
+        replyTo: email,
+        subject: `New ${planName} ${isEnquiry ? "quote enquiry" : "subscription request"} - ${name}`,
+        html,
+      });
+      if (error) console.error("Failed to send plan enquiry email:", error);
+      else emailSent = true;
+    } catch (emailError) {
+      console.error("Failed to send plan enquiry email:", emailError);
+    }
+
+    if (enquiryId && emailSent) {
+      await prisma.enquiry.update({ where: { id: enquiryId }, data: { email_sent: true } }).catch(() => null);
+    }
+
+    // The request is safe as long as it was saved or emailed.
+    if (!enquiryId && !emailSent) {
       return NextResponse.json(
         { message: "We could not send your request right now. Please try again later." },
         { status: 502 }
       );
     }
 
-    return NextResponse.json({ success: true, id: data?.id });
+    return NextResponse.json({ success: true, id: enquiryId });
   } catch (error) {
     console.error("Plan enquiry failed:", error);
     return NextResponse.json(

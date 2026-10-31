@@ -122,6 +122,22 @@ export async function generatePaymentLinkCode(tx: Tx): Promise<string> {
   return generateOrderCode(tx, PAYMENT_LINK_CODE);
 }
 
+/** Order ID for a plan purchase or renewal: FNX-LITE-1001, FNX-PRO-1001, FNX-MAX-1001. */
+export async function generatePlanCode(tx: Tx, plan: "FIXLITE" | "FIXPRO" | "FIXMAX"): Promise<string> {
+  const codes = { FIXLITE: "LITE", FIXPRO: "PRO", FIXMAX: "MAX" } as const;
+  return generateOrderCode(tx, codes[plan]);
+}
+
+/** Order ID for a plan upgrade payment, like FNX-UPG-1001. */
+export async function generateUpgradeCode(tx: Tx): Promise<string> {
+  return generateOrderCode(tx, "UPG");
+}
+
+/** Booking ID for a plan preventive check, like FNX-CHECK-1001. */
+export async function generatePreventiveCheckCode(tx: Tx): Promise<string> {
+  return generateOrderCode(tx, "CHECK");
+}
+
 /** Customer ID like HARSHALTARWALE001: full name (letters/digits only) + running number. */
 export async function generateCustomerCode(tx: Tx, fullName: string): Promise<string> {
   const base =

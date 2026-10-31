@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GoogleLogin } from "@react-oauth/google";
 import Header from "../components/layout/Header";
 import PasswordInput from "../components/common/PasswordInput";
 import Footer from "../components/layout/Footer";
+import { safeRedirect } from "@/lib/safeRedirect";
 
 const SignupPage = () => {
   const router = useRouter();
+  // Where to go after signing up, e.g. back to the plan the customer chose (?redirect=/subscribe...).
+  const [redirectTo, setRedirectTo] = useState(null);
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("redirect");
+    if (value) setRedirectTo(safeRedirect(value));
+  }, []);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -79,8 +86,8 @@ const SignupPage = () => {
         return;
       }
 
-      alert("Signup successful! Redirecting to the home page.");
-      router.push("/");
+      alert(redirectTo ? "Signup successful! Taking you back to where you were." : "Signup successful! Redirecting to the home page.");
+      router.push(redirectTo ?? "/");
       router.refresh();
     } catch (err) {
       console.error("Signup error:", err);
@@ -106,8 +113,8 @@ const SignupPage = () => {
         return;
       }
 
-      alert("Signup successful! Redirecting to the home page.");
-      router.push("/");
+      alert(redirectTo ? "Signup successful! Taking you back to where you were." : "Signup successful! Redirecting to the home page.");
+      router.push(redirectTo ?? "/");
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -281,7 +288,10 @@ const SignupPage = () => {
 
             <p className="text-center text-sm text-white/65 mt-6">
               Already have an account?{' '}
-              <Link href="/login" className="text-blue-400 transition hover:text-blue-300">
+              <Link
+                href={redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : "/login"}
+                className="text-blue-400 transition hover:text-blue-300"
+              >
                 Log in instead
               </Link>
             </p>

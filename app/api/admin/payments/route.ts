@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const payments = await prisma.payment.findMany({
       orderBy: { created_at: "desc" },
       include: {
-        payment_order: true
+        payment_order: { include: { custom_payment_link: { select: { plan_request: true } } } }
       }
     });
 
@@ -50,7 +50,17 @@ export async function GET(request: NextRequest) {
       const booking = payment.booking_id ? bookingMap.get(payment.booking_id) : null;
       let serviceName = "Multiple Services";
       
-      if (booking && (booking.category_name || booking.service_type)) {
+      // Plan payments (purchase, renewal, upgrade, or a plan payment link) have no booking.
+      const planRequest = (payment.payment_order.plan_request ??
+        payment.payment_order.custom_payment_link?.plan_request) as { kind?: string; plan?: string } | null | undefined;
+      const planNames: Record<string, string> = { FIXLITE: "FixLite", FIXPRO: "FixPro", FIXMAX: "FixMax" };
+
+      if (planRequest?.plan) {
+        serviceName =
+          planRequest.kind === "upgrade"
+            ? "Plan upgrade to FixPro"
+            : `${planNames[planRequest.plan] ?? planRequest.plan} plan (1 month)`;
+      } else if (booking && (booking.category_name || booking.service_type)) {
         serviceName = `${booking.category_name || ''} ${booking.service_type ? `(${booking.service_type})` : ''}`.trim();
       } else {
         // Fallback to cart item if booking is missing (e.g. failed payment)

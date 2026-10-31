@@ -28,8 +28,11 @@ type BookingCartItem = {
   scheduled_date: string | null;
   time_slot: string | null;
   price: string | null;
+  coverage?: "INCLUDED" | "MEMBER" | "NORMAL" | null;
   services?: BookingService | null;
 };
+
+type PlanTier = "FIXLITE" | "FIXPRO" | "FIXMAX";
 
 type Booking = {
   id: string;
@@ -48,7 +51,25 @@ type Booking = {
   guest_phone?: string | null;
   bookingCartItems: BookingCartItem[];
   payments?: { status: string }[];
+  payment_status?: "PAID" | "INCLUDED" | "UNPAID" | null;
+  member_plan?: PlanTier | null;
+  property_scope?: "PLAN" | "OTHER" | null;
+  is_priority?: boolean;
+  is_preventive_check?: boolean;
 };
+
+const PLAN_LABELS: Record<PlanTier, string> = { FIXLITE: "FixLite", FIXPRO: "FixPro", FIXMAX: "FixMax" };
+const PLAN_BADGE: Record<PlanTier, string> = {
+  FIXLITE: "bg-sky-500/10 text-sky-300 ring-sky-500/30",
+  FIXPRO: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/30",
+  FIXMAX: "bg-violet-500/10 text-violet-300 ring-violet-500/30",
+};
+
+const Tag = ({ className, children }: { className: string; children: React.ReactNode }) => (
+  <span className={`inline-flex w-fit items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${className}`}>
+    {children}
+  </span>
+);
 
 type PaginationPayload = {
   total: number;
@@ -432,6 +453,31 @@ const AdminPageContent = () => {
           bookingId: booking.id,
           booking,
           services: booking.bookingCartItems,
+        });
+      } else {
+        // Bookings without cart items (e.g. plan preventive checks) still need a row.
+        grouped.push({
+          bookingId: booking.id,
+          booking,
+          services: [
+            {
+              id: `${booking.id}-self`,
+              category_name: booking.category_name,
+              location: booking.location,
+              service_type: booking.service_type,
+              scheduled_date: booking.scheduled_date,
+              time_slot: booking.time_slot,
+              price: booking.price,
+              coverage: booking.payment_status === "INCLUDED" ? "INCLUDED" : null,
+              services: {
+                id: `${booking.id}-self`,
+                name: booking.service_type ?? "Service",
+                normal_price: booking.price ?? "",
+                member_price: booking.price ?? "",
+                icon: "",
+              },
+            },
+          ],
         });
       }
     });
@@ -830,8 +876,18 @@ const AdminPageContent = () => {
                                   <div className="flex flex-col gap-1">
                                     <span className="text-xs sm:text-sm break-all">{group.booking.booking_code ?? group.bookingId}</span>
                                     <span className="text-xs text-slate-400">
-                                      {group.services.length} service{group.services.length !== 1 ? "s" : ""}
+                                      {group.booking.is_preventive_check
+                                        ? "Plan preventive check"
+                                        : `${group.services.length} service${group.services.length !== 1 ? "s" : ""}`}
                                     </span>
+                                    {group.booking.is_priority && (
+                                      <Tag className="bg-amber-500/10 text-amber-300 ring-amber-500/30">⚡ PRIORITY</Tag>
+                                    )}
+                                    {group.booking.member_plan && group.booking.property_scope && (
+                                      <Tag className="bg-slate-500/10 text-slate-300 ring-slate-500/30">
+                                        {group.booking.property_scope === "PLAN" ? "Plan property" : "Other property"}
+                                      </Tag>
+                                    )}
                                   </div>
                                 </td>
                                 <td
@@ -842,6 +898,13 @@ const AdminPageContent = () => {
                                     <span className="text-xs sm:text-sm">{getUserDisplayName(group.booking)}</span>
                                     {group.booking.user?.customer_code && (
                                       <span className="text-xs text-slate-400">{group.booking.user.customer_code}</span>
+                                    )}
+                                    {group.booking.member_plan ? (
+                                      <Tag className={PLAN_BADGE[group.booking.member_plan]}>
+                                        {PLAN_LABELS[group.booking.member_plan]} member
+                                      </Tag>
+                                    ) : (
+                                      <Tag className="bg-slate-500/10 text-slate-400 ring-slate-500/20">Normal customer</Tag>
                                     )}
                                   </div>
                                 </td>
@@ -880,19 +943,29 @@ const AdminPageContent = () => {
                             </td>
                             <td className="whitespace-nowrap px-2 py-4 sm:px-4 text-right text-slate-200 text-xs sm:text-sm">
                               {formatCurrency(service.price)}
+                              {service.coverage === "INCLUDED" && (
+                                <span className="mt-0.5 block text-[10px] font-semibold text-emerald-400">Included in plan</span>
+                              )}
+                              {service.coverage === "MEMBER" && (
+                                <span className="mt-0.5 block text-[10px] font-semibold text-sky-400">Member price</span>
+                              )}
                             </td>
                             {serviceIndex === 0 && (
                               <td
                                 rowSpan={group.services.length}
                                 className="whitespace-nowrap px-2 py-4 sm:px-4 align-top border-l border-slate-800/50 text-right"
                               >
-                                {group.booking.payments?.some(p => p.status === "Success") ? (
+                                {group.booking.payment_status === "INCLUDED" ? (
+                                  <span className="inline-flex items-center rounded-full bg-violet-500/10 px-2 py-1 text-xs font-medium text-violet-300 ring-1 ring-inset ring-violet-500/20">
+                                    Included in plan
+                                  </span>
+                                ) : group.booking.payment_status === "PAID" || group.booking.payments?.some(p => p.status === "Success") ? (
                                   <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-                                    Successful
+                                    Paid
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
-                                    Pending
+                                    Unpaid
                                   </span>
                                 )}
                               </td>
