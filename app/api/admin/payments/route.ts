@@ -82,6 +82,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: payment.id,
+        order_code: payment.payment_order.order_code ?? payment.payment_order.id,
         transaction_id: payment.transaction_id || "N/A",
         tracking_id: payment.tracking_id || "N/A",
         amount: payment.amount,
@@ -98,6 +99,7 @@ export async function GET(request: NextRequest) {
     // 5. Apply Client-side style search filter if provided
     if (search) {
       formattedPayments = formattedPayments.filter(p => 
+        p.order_code.toLowerCase().includes(search) ||
         p.user.name.toLowerCase().includes(search) ||
         p.user.id.toLowerCase().includes(search) ||
         p.transaction_id.toLowerCase().includes(search) ||

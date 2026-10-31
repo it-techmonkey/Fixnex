@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { generateBookingCode } from "@/lib/readableIds";
+import { generateBookingCode, generatePaymentLinkCode } from "@/lib/readableIds";
 import { decrypt, parseCCResponse } from "@/lib/ccavenue";
 
 /**
@@ -69,7 +69,8 @@ export async function POST(request: NextRequest) {
     if (paymentOrder.status !== "PENDING") {
       console.warn(`PaymentOrder ${orderId} already processed. Status: ${paymentOrder.status}`);
       if (paymentOrder.status === "SUCCESS") {
-        return NextResponse.redirect(`${appUrl}/payment/success?orderId=${orderId}`, {
+        const reference = encodeURIComponent(paymentOrder.order_code ?? orderId);
+        return NextResponse.redirect(`${appUrl}/payment/success?orderId=${reference}`, {
           status: 302,
         });
       }
@@ -81,9 +82,11 @@ export async function POST(request: NextRequest) {
     const isSuccess = orderStatus === "Success";
 
     if (isSuccess) {
-      // 6a. Success path — create booking and payment record atomically
-      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        
+      // 6a. Success path — create booking and payment record atomically.
+      // Returns the readable order ID (FNX-AC-1001) shown to the customer.
+      const orderCode = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        let code: string;
+
         if (paymentOrder.custom_payment_link_id || (paymentOrder as any).custom_payment_link) {
           // --- CUSTOM PAYMENT LINK FLOW ---
           // Mark custom link as PAID
@@ -92,6 +95,8 @@ export async function POST(request: NextRequest) {
             where: { id: linkId },
             data: { status: "SUCCESS" },
           });
+
+          code = await generatePaymentLinkCode(tx);
 
           // Create payment record (so it appears in ledger)
           await tx.payment.create({
@@ -126,13 +131,15 @@ export async function POST(request: NextRequest) {
           // Use first item's details as booking-level fields
           const firstItem = items[0];
 
-          // Create the booking
+          code = await generateBookingCode(
+            tx,
+            items.map((item: { services: { name: string } | null }) => item.services?.name)
+          );
+
+          // Create the booking (same ID as the order)
           const booking = await tx.booking.create({
             data: {
-              booking_code: await generateBookingCode(
-                tx,
-                items.map((item: { services: { name: string } | null }) => item.services?.name)
-              ),
+              booking_code: code,
               user_id: paymentOrder.user_id,
               guest_name: !paymentOrder.user_id ? (ccData["billing_name"] || "Guest") : null,
               guest_email: !paymentOrder.user_id ? ccData["billing_email"] : null,
@@ -171,8 +178,10 @@ export async function POST(request: NextRequest) {
         // Mark payment order as succeeded
         await tx.paymentOrder.update({
           where: { id: paymentOrder.id },
-          data: { status: "SUCCESS" },
+          data: { status: "SUCCESS", order_code: code },
         });
+
+        return code;
       });
 
       // Clear cart (best-effort, outside transaction — failure here does not block the user)
@@ -208,7 +217,7 @@ export async function POST(request: NextRequest) {
             customerName: billingName,
             customerEmail: billingEmail,
             customerId: customerCode || "Guest",
-            orderId: orderId,
+            orderId: orderCode,
             transactionId: bankRefNo || trackingId || "N/A",
             amount: paymentOrder.amount,
             date: new Date().toLocaleDateString(),
@@ -220,7 +229,7 @@ export async function POST(request: NextRequest) {
           await resend.emails.send({
             from: "payment@fixnex.ae",
             to: billingEmail,
-            subject: `Payment Receipt - ${orderId}`,
+            subject: `Payment Receipt - ${orderCode}`,
             html: htmlOutput,
           });
           console.log(`Invoice sent to ${billingEmail}`);
@@ -229,7 +238,7 @@ export async function POST(request: NextRequest) {
         console.error("Failed to send invoice email:", emailErr);
       }
 
-      return NextResponse.redirect(`${appUrl}/payment/success?orderId=${orderId}`, {
+      return NextResponse.redirect(`${appUrl}/payment/success?orderId=${encodeURIComponent(orderCode)}`, {
         status: 302,
       });
     } else {

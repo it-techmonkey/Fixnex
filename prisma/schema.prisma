@@ -72,7 +72,7 @@ model ServiceCategory {
 
 model Booking {
   id             String    @id @default(cuid())
-  booking_code   String?   @unique // readable ID, e.g. FNX-HOME-0042 (new bookings only)
+  booking_code   String?   @unique // readable ID, e.g. FNX-AC-1001 (new bookings only)
   bookingCartItems BookingCartItem[]
   user_id        String?
   user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
@@ -138,6 +138,7 @@ enum BookingStatus {
 
 model PaymentOrder {
   id                     String             @id @default(cuid())
+  order_code             String?            @unique // readable ID shown to customers, e.g. FNX-AC-1001 (set on success)
   user_id                String?
   booking_cart_items     String[]           // bookingCartItemId references
   custom_payment_link_id String?            @unique

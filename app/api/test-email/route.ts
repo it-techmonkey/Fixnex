@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       customerName: "Jane Doe",
       customerEmail: "jane.doe@example.com",
       customerId: "USR-9876",
-      orderId: "ORD-554433",
+      orderId: "FNX-AC-1001",
       transactionId: "TXN-998877",
       amount: "500.00",
       date: new Date().toLocaleDateString(),
