@@ -27,6 +27,16 @@ type CartItemWithService = Prisma.BookingCartItemGetPayload<{
   include: { services: { select: { name: true; normal_price: true; member_price: true } } };
 }>;
 
+/** A cart item sent by a guest (no account): only the service ID and visit details are used. */
+type GuestCartItem = {
+  service_id: string;
+  category_name?: string | null;
+  location?: string | null;
+  service_type?: string | null;
+  scheduled_date?: string | null;
+  time_slot?: string | null;
+};
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Parse body
@@ -34,7 +44,7 @@ export async function POST(request: NextRequest) {
       bookingCartItemIds?: unknown;
       custom_link_id?: string;
       guestDetails?: { name: string; email: string; phone: string };
-      guestCartItems?: any[];
+      guestCartItems?: GuestCartItem[];
       propertyScope?: PropertyScope;
       /** Total the customer saw; if prices changed since, they are shown the new prices first. */
       expectedTotal?: number;
@@ -48,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     let totalAmount = "0.00";
-    let paymentOrderData: Prisma.PaymentOrderUncheckedCreateInput = {
+    const paymentOrderData: Prisma.PaymentOrderUncheckedCreateInput = {
       user_id: session?.userId || null,
       currency: "AED",
       amount: "0.00",
@@ -172,7 +182,7 @@ export async function POST(request: NextRequest) {
 
 /** Validates the cart (or creates guest cart items) and returns the item IDs to book. */
 async function resolveCartItems(
-  body: { bookingCartItemIds?: unknown; guestDetails?: unknown; guestCartItems?: any[] },
+  body: { bookingCartItemIds?: unknown; guestDetails?: unknown; guestCartItems?: GuestCartItem[] },
   userId: string | null
 ): Promise<string[]> {
   const isGuest = !userId && !!body.guestDetails && !!body.guestCartItems;

@@ -129,7 +129,7 @@ function SubscribeContent() {
   if (state === "error") {
     return (
       <Centered>
-        <p className="text-white/80">We couldn't load your details. Please refresh the page.</p>
+        <p className="text-white/80">We couldn&apos;t load your details. Please refresh the page.</p>
       </Centered>
     );
   }
@@ -142,7 +142,7 @@ function SubscribeContent() {
         </h1>
         <p className="mt-3 text-white/65 text-sm leading-6">
           Your plan is linked to your account so your included visits and member prices apply when you book.
-          It takes a minute to create an account, and you'll come straight back here.
+          It takes a minute to create an account, and you&apos;ll come straight back here.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
           <Link href={`/login?redirect=${encodeURIComponent(returnPath)}`} className={primaryButton}>Log in</Link>
@@ -174,7 +174,7 @@ function SubscribeContent() {
       <Card>
         <h1 className="text-2xl sm:text-3xl font-semibold font-['Space_Grotesk'] text-white">FixMax is priced for your property</h1>
         <p className="mt-3 text-white/65 text-sm leading-6">
-          Request a quote and our team will contact you with a price for your property. Once agreed, you'll get a
+          Request a quote and our team will contact you with a price for your property. Once agreed, you&apos;ll get a
           secure payment link and your plan starts as soon as you pay.
         </p>
         <div className="mt-6"><Link href="/#plans-pricing" className={primaryButton}>Request a FixMax quote</Link></div>
@@ -243,7 +243,7 @@ function SubscribeContent() {
         </Field>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-white text-sm font-semibold font-['Space_Grotesk']">What's included</p>
+          <p className="text-white text-sm font-semibold font-['Space_Grotesk']">What&apos;s included</p>
           <ul className="mt-2 space-y-1.5 text-[13px] text-white/70 leading-5">
             {planBenefitSummary(tier).map((line) => (
               <li key={line} className="flex gap-2"><span className="text-sky-400">✓</span>{line}</li>

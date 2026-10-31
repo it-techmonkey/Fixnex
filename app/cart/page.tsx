@@ -6,6 +6,7 @@ import Header from "@/app/components/layout/Header";
 import Footer from "@/app/components/layout/Footer";
 import Icons from "@/app/components/icons";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { redirectToGateway } from "@/app/utils/gateway";
 import { PLAN_NAMES, formatPlanDate, type PlanTierName } from "@/lib/plans";
 
@@ -517,7 +518,7 @@ const CartPage = () => {
                         return (
                           <p className="mt-1.5 text-xs text-white/50">
                             Plan members pay {aed(q.memberPrice)}.{" "}
-                            <a href="/#plans-pricing" className="text-sky-300 hover:text-sky-200">See plans</a>
+                            <Link href="/#plans-pricing" className="text-sky-300 hover:text-sky-200">See plans</Link>
                           </p>
                         );
                       }

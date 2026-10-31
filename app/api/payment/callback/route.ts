@@ -304,7 +304,7 @@ export async function POST(request: NextRequest) {
 
 /** Booking / payment link invoice (unchanged behaviour). Never throws. */
 async function sendInvoice(
-  paymentOrder: any,
+  paymentOrder: { user_id: string | null; custom_payment_link_id: string | null; amount: string },
   ccData: Record<string, string>,
   orderCode: string,
   orderStatus: string,

@@ -27,6 +27,18 @@ const navItems: Array<{ key: AdminNavKey; label: string; href: string; icon: Rea
     icon: <CalendarListIcon className="size-5" />,
   },
   {
+    key: 'enquiries',
+    label: 'Enquiries',
+    href: '/admin-dashboard/enquiries',
+    icon: <InboxIcon className="size-5" />,
+  },
+  {
+    key: 'subscriptions',
+    label: 'Subscriptions',
+    href: '/admin-dashboard/subscriptions',
+    icon: <BadgeIcon className="size-5" />,
+  },
+  {
     key: 'payments',
     label: 'Payments',
     href: '/admin-dashboard/payments',

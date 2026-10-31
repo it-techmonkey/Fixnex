@@ -314,7 +314,7 @@ function CreatePlanModal({
         {linkUrl ? (
           <div className="mt-5 space-y-4">
             <p className="text-sm text-slate-300">
-              Payment link created. Send it to the customer. Their plan starts as soon as they pay, and you'll see it here.
+              Payment link created. Send it to the customer. Their plan starts as soon as they pay, and you&apos;ll see it here.
             </p>
             <div className="flex gap-2">
               <input readOnly value={linkUrl} className={input} onFocus={(e) => e.target.select()} />
@@ -325,14 +325,14 @@ function CreatePlanModal({
                 Copy
               </button>
             </div>
-            <p className="text-xs text-slate-500">It's also listed on the Payment Links page.</p>
+            <p className="text-xs text-slate-500">It&apos;s also listed on the Payment Links page.</p>
             <button onClick={onClose} className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-white hover:bg-slate-800">Done</button>
           </div>
         ) : (
           <div className="mt-5 space-y-4 text-sm">
             <Label text="Customer's account email">
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="customer@example.com" className={input} />
-              <span className="mt-1 block text-xs text-slate-500">The customer needs a Fixnex account. If they don't have one, ask them to sign up first.</span>
+              <span className="mt-1 block text-xs text-slate-500">The customer needs a Fixnex account. If they don&apos;t have one, ask them to sign up first.</span>
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <Label text="Plan">

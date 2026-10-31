@@ -110,7 +110,7 @@ export default function MyPlanPage() {
             </div>
           )}
 
-          {state === "error" && <Box>We couldn't load your plan. Please refresh the page.</Box>}
+          {state === "error" && <Box>We couldn&apos;t load your plan. Please refresh the page.</Box>}
 
           {state === "login" && (
             <Box>
@@ -139,7 +139,7 @@ export default function MyPlanPage() {
                     <>
                       <p className="text-sm text-white/70">
                         Your plan ends on {formatPlanDate(data.current.endsAt)} and does not renew automatically. Pay now
-                        to continue. The new month starts when this one ends, so you won't lose any days.
+                        to continue. The new month starts when this one ends, so you won&apos;t lose any days.
                       </p>
                       <Link
                         href={`/subscribe?plan=${planId(data.current.plan)}&property=${data.current.propertyType}`}
@@ -151,7 +151,7 @@ export default function MyPlanPage() {
                   ) : (
                     <p className="text-sm text-white/70">
                       Your plan ends on {formatPlanDate(data.current.endsAt)} and does not renew automatically.{" "}
-                      {data.renewal.reason} We'll email you a reminder.
+                      {data.renewal.reason} We&apos;ll email you a reminder.
                     </p>
                   )}
                 </Box>
@@ -253,7 +253,7 @@ function NoPlan({ data }: { data: Membership }) {
         </p>
       ) : (
         <>
-          <h2 className={sectionTitle}>You don't have an active plan</h2>
+          <h2 className={sectionTitle}>You don&apos;t have an active plan</h2>
           <p className="text-sm text-white/70">
             {latest && latest.state !== "ACTIVE"
               ? `Your ${latest.planName} plan ${latest.state === "CANCELLED" ? "was cancelled" : `ended on ${formatPlanDate(latest.endsAt)}`}. You can start a new month at any time.`
