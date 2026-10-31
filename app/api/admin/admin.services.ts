@@ -229,6 +229,14 @@ export class AdminService {
       }))
       .sort((a, b) => b.count - a.count);
 
+    // Plan figures for the dashboard (kept separate so a problem here never breaks the page).
+    const [newEnquiries, activeMembers] = await Promise.all([
+      this.client.enquiry.count({ where: { status: "NEW" } }).catch(() => 0),
+      this.client.subscription
+        .count({ where: { status: "ACTIVE", starts_at: { lte: now }, ends_at: { gt: now } } })
+        .catch(() => 0),
+    ]);
+
     const latestHighlights = recentBookings.map((booking) => ({
       id: booking.id,
       status: booking.status,
@@ -248,6 +256,8 @@ export class AdminService {
         cancelledBookings,
         newBookingsLast30Days,
         uniqueCustomers,
+        newEnquiries,
+        activeMembers,
       },
       revenue: {
         total: Number(totalRevenue.toFixed(2)),

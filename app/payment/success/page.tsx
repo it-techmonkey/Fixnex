@@ -8,6 +8,44 @@ import Footer from "@/app/components/layout/Footer";
 const PaymentSuccessContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const type = searchParams.get("type");
+
+  // What happened, depending on what was paid for.
+  const content =
+    type === "plan"
+      ? {
+          title: "Your plan is active",
+          text: "Thank you! Your plan is set up and a receipt is on its way to your email. Your included visits and member prices apply as soon as you book.",
+          primary: { href: "/my-plan", label: "Go to My Plan" },
+          secondary: { href: "/services", label: "Book a service" },
+        }
+      : type === "upgrade"
+        ? {
+            title: "You're now on FixPro",
+            text: "Your upgrade is done. Unlimited included visits, emergency cover and preventive checks apply straight away.",
+            primary: { href: "/my-plan", label: "Go to My Plan" },
+            secondary: { href: "/services", label: "Book a service" },
+          }
+        : type === "included"
+          ? {
+              title: "Booking confirmed",
+              text: "This booking is included in your plan, so there's nothing to pay. A confirmation is on its way to your email.",
+              primary: { href: "/bookings", label: "View My Bookings" },
+              secondary: { href: "/my-plan", label: "Go to My Plan" },
+            }
+          : type === "quote"
+            ? {
+                title: "Booking received",
+                text: "This service is priced by quote. Our team will contact you with the price before the visit.",
+                primary: { href: "/bookings", label: "View My Bookings" },
+                secondary: { href: "/services", label: "Browse More Services" },
+              }
+            : {
+                title: "Payment Successful",
+                text: "Your booking has been confirmed. Our team will reach out shortly to finalise the details.",
+                primary: { href: "/bookings", label: "View My Bookings" },
+                secondary: { href: "/services", label: "Browse More Services" },
+              };
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center text-white space-y-6 px-4">
@@ -27,11 +65,9 @@ const PaymentSuccessContent = () => {
 
       <div className="space-y-3 max-w-lg">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold font-['Space_Grotesk']">
-          Payment Successful
+          {content.title}
         </h1>
-        <p className="text-white/70 text-sm sm:text-base">
-          Your booking has been confirmed. Our team will reach out shortly to finalise the details.
-        </p>
+        <p className="text-white/70 text-sm sm:text-base">{content.text}</p>
         {orderId && (
           <p className="text-white/40 text-xs font-mono">
             Reference: {orderId}
@@ -41,16 +77,16 @@ const PaymentSuccessContent = () => {
 
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <a
-          href="/bookings"
+          href={content.primary.href}
           className="px-6 py-3 text-sm sm:text-base bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-semibold font-['Space_Grotesk'] transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/30"
         >
-          View My Bookings
+          {content.primary.label}
         </a>
         <a
-          href="/services"
+          href={content.secondary.href}
           className="px-6 py-3 text-sm sm:text-base border border-white/30 text-white rounded-lg font-['Space_Grotesk'] hover:bg-white/10 transition"
         >
-          Browse More Services
+          {content.secondary.label}
         </a>
       </div>
     </div>

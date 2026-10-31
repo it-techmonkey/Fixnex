@@ -28,6 +28,7 @@ type BookingCartItemRecord = {
   scheduled_date?: string | null;
   time_slot?: string | null;
   price?: string | null;
+  coverage?: "INCLUDED" | "MEMBER" | "NORMAL" | null;
 };
 
 type BookingRecord = {
@@ -38,7 +39,21 @@ type BookingRecord = {
   time_slot: string | null;
   created_at: string;
   price: string | null;
+  location?: string | null;
+  service_type?: string | null;
+  payment_status?: "PAID" | "INCLUDED" | "UNPAID" | null;
+  member_plan?: "FIXLITE" | "FIXPRO" | "FIXMAX" | null;
+  is_priority?: boolean;
+  is_preventive_check?: boolean;
 };
+
+const PLAN_LABELS = { FIXLITE: "FixLite", FIXPRO: "FixPro", FIXMAX: "FixMax" } as const;
+
+const PAYMENT_TAGS = {
+  PAID: { label: "Paid", className: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30" },
+  INCLUDED: { label: "Included in your plan", className: "bg-violet-500/15 text-violet-300 ring-violet-500/30" },
+  UNPAID: { label: "Pay on visit", className: "bg-amber-500/15 text-amber-300 ring-amber-500/30" },
+} as const;
 
 type BookingTab = "upcoming" | "past";
 
@@ -331,7 +346,22 @@ const BookingsPage = () => {
         className="bg-[#17181b] border border-gray-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6 hover:border-blue-500/60 transition"
       >
         <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3 sm:gap-4 text-white/80 text-xs sm:text-sm">
-          <span className="font-medium font-['Space_Grotesk'] break-all">Booking ID: {booking.booking_code ?? booking.id}</span>
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="font-medium font-['Space_Grotesk'] break-all">Booking ID: {booking.booking_code ?? booking.id}</span>
+            {booking.payment_status && (
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${PAYMENT_TAGS[booking.payment_status].className}`}>
+                {PAYMENT_TAGS[booking.payment_status].label}
+              </span>
+            )}
+            {booking.member_plan && booking.payment_status !== "INCLUDED" && (
+              <span className="rounded-full bg-sky-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-sky-300 ring-1 ring-sky-500/30">
+                {PLAN_LABELS[booking.member_plan]} member
+              </span>
+            )}
+            {booking.is_priority && (
+              <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-500/30">Priority</span>
+            )}
+          </span>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
             <span className="text-white/70">
               Created:{" "}
@@ -349,6 +379,24 @@ const BookingsPage = () => {
             </button>
           </div>
         </div>
+
+        {booking.bookingCartItems.length === 0 && (
+          <div className="bg-black/30 border border-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1 text-xs sm:text-sm">
+            <h4 className="text-white text-base sm:text-lg font-semibold font-['Space_Grotesk']">
+              {booking.service_type ?? "Service"}
+            </h4>
+            {booking.is_preventive_check && booking.member_plan && (
+              <p className="text-white/60">Included in your {PLAN_LABELS[booking.member_plan]} plan</p>
+            )}
+            {booking.scheduled_date && (
+              <p className="text-white/60">
+                Scheduled: <span className="text-white font-semibold">{formatDate(booking.scheduled_date) ?? booking.scheduled_date}</span>
+              </p>
+            )}
+            {booking.time_slot && <p className="text-white/60">Time Slot: <span className="text-white font-semibold">{booking.time_slot}</span></p>}
+            {booking.location && <p className="text-white/60">Location: <span className="text-white font-semibold">{booking.location}</span></p>}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {booking.bookingCartItems.map((item) => {
@@ -385,6 +433,8 @@ const BookingsPage = () => {
                           ? svc.normal_price
                           : `AED ${parseFloat(svc.normal_price).toFixed(2)}`}
                       </span>
+                      {item.coverage === "INCLUDED" && <span className="ml-2 text-violet-300 text-xs font-semibold">Included in plan</span>}
+                      {item.coverage === "MEMBER" && <span className="ml-2 text-sky-300 text-xs font-semibold">Member price</span>}
                     </p>
                     <p className="text-white/60 text-xs sm:text-sm">
                       Member:{" "}

@@ -29,6 +29,8 @@ model User {
   bookings         Booking[]
   cart             Cart?
   passwordResetTokens PasswordResetToken[]
+  subscriptions    Subscription[]
+  enquiries        Enquiry[]
 
   @@map("users")
 }
@@ -72,7 +74,7 @@ model ServiceCategory {
 
 model Booking {
   id             String    @id @default(cuid())
-  booking_code   String?   @unique // readable ID, e.g. FNX-HOME-0042 (new bookings only)
+  booking_code   String?   @unique // readable ID, e.g. FNX-AC-1001 (new bookings only)
   bookingCartItems BookingCartItem[]
   user_id        String?
   user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
@@ -86,11 +88,26 @@ model Booking {
   time_slot      String?
   price          String?
   status         BookingStatus @default(PENDING)
+  // Plan details, saved when the booking is made so history stays correct after a plan ends.
+  payment_status BookingPaymentStatus @default(UNPAID)
+  member_plan    PlanTier?           // the customer's plan at booking time (null = normal customer)
+  subscription_id String?
+  subscription   Subscription?       @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+  property_scope String?             // PLAN (the plan's property) | OTHER
+  is_priority    Boolean   @default(false)
+  is_preventive_check Boolean @default(false)
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
   @@index([user_id])
+  @@index([subscription_id])
   @@map("bookings")
+}
+
+enum BookingPaymentStatus {
+  PAID      // paid online
+  INCLUDED  // fully covered by the customer's plan (AED 0)
+  UNPAID    // e.g. booked through Nex AI chat, pay on visit
 }
 
 model Cart {
@@ -117,10 +134,14 @@ model BookingCartItem {
   scheduled_date DateTime?
   time_slot      String?
   price          String?
+  coverage       String?   // INCLUDED (in plan) | MEMBER (member price) | NORMAL, set at checkout
+  subscription_id String?  // plan month an INCLUDED item counts against
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
   booking        Booking?  @relation(fields: [booking_id], references: [id], onDelete: Cascade)
   booking_id     String?
+
+  @@index([subscription_id])
 }
 
 enum BookingStatus {
@@ -138,6 +159,7 @@ enum BookingStatus {
 
 model PaymentOrder {
   id                     String             @id @default(cuid())
+  order_code             String?            @unique // readable ID shown to customers, e.g. FNX-AC-1001 (set on success)
   user_id                String?
   booking_cart_items     String[]           // bookingCartItemId references
   custom_payment_link_id String?            @unique
@@ -145,12 +167,22 @@ model PaymentOrder {
   amount                 String
   currency               String             @default("AED")
   status                 PaymentOrderStatus @default(PENDING)
+  purpose                PaymentPurpose     @default(BOOKING)
+  pricing                Json?              // BOOKING: price per cart item as quoted at checkout
+  included_visits        Int                @default(0) // plan visits this order reserves until paid
+  plan_request           Json?              // PLAN: what to activate once paid
   created_at             DateTime           @default(now())
   updated_at             DateTime           @updatedAt
   payment                Payment?
+  subscription           Subscription?
 
   @@index([user_id])
   @@map("payment_orders")
+}
+
+enum PaymentPurpose {
+  BOOKING
+  PLAN
 }
 
 enum PaymentOrderStatus {
@@ -182,11 +214,90 @@ model CustomPaymentLink {
   description    String
   customer_email String?
   status         PaymentOrderStatus @default(PENDING)
+  plan_request   Json?         // set when the link pays for a plan (e.g. a FixMax quote)
   created_at     DateTime      @default(now())
   updated_at     DateTime      @updatedAt
   payment_order  PaymentOrder?
 
   @@map("custom_payment_links")
+}
+
+// ---------------------------------------------------------------------------
+// Plans (FixLite / FixPro / FixMax)
+// ---------------------------------------------------------------------------
+
+// One row per paid month. Renewing adds a new row that starts when the previous one ends.
+model Subscription {
+  id               String    @id @default(cuid())
+  code             String    @unique // readable ID, e.g. FNX-PRO-1010
+  user_id          String
+  user             User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plan             PlanTier
+  property_type    String    // apartment | family | villa
+  property_area    String
+  price            String    // monthly price for this month, AED
+  visits_included  Int?      // included visits this month; null = unlimited
+  visits_bonus     Int       @default(0) // extra visits added by admin
+  status           SubscriptionStatus @default(ACTIVE)
+  starts_at        DateTime
+  ends_at          DateTime
+  source           String    @default("online") // online | payment_link | admin
+  payment_order_id String?   @unique
+  payment_order    PaymentOrder? @relation(fields: [payment_order_id], references: [id])
+  cancelled_at     DateTime?
+  reminder_sent_at DateTime?
+  expiry_notice_sent_at DateTime?
+  admin_note       String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  bookings         Booking[]
+
+  @@index([user_id, ends_at])
+  @@map("subscriptions")
+}
+
+enum PlanTier {
+  FIXLITE
+  FIXPRO
+  FIXMAX
+}
+
+enum SubscriptionStatus {
+  ACTIVE     // paid; active between starts_at and ends_at
+  CANCELLED  // stopped by admin
+}
+
+// Plan enquiries and quote requests from the website.
+model Enquiry {
+  id             String    @id @default(cuid())
+  user_id        String?
+  user           User?     @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  name           String
+  email          String
+  phone          String
+  plan_id        String
+  plan_name      String
+  type           String    // enquiry | subscription
+  property_type  String?
+  property_label String?
+  price          String?
+  facilities     String[]
+  message        String?
+  status         EnquiryStatus @default(NEW)
+  admin_note     String?
+  email_sent     Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@index([status, created_at])
+  @@map("enquiries")
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  CLOSED
 }
 
 // Running numbers for readable IDs (customer codes per name, booking codes).

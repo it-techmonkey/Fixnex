@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+type AdminNavKey = 'dashboard' | 'bookings' | 'enquiries' | 'subscriptions' | 'payments' | 'payment-links' | 'account';
+
 type AdminLayoutProps = {
   children: React.ReactNode;
   title?: string;
-  /** Which nav item is active: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account' */
-  currentNav?: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account';
+  /** Which nav item is active */
+  currentNav?: AdminNavKey;
 };
 
-const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-links' | 'account'; label: string; href: string; icon: React.ReactNode }> = [
+const navItems: Array<{ key: AdminNavKey; label: string; href: string; icon: React.ReactNode }> = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -23,6 +25,18 @@ const navItems: Array<{ key: 'dashboard' | 'bookings' | 'payments' | 'payment-li
     label: 'Bookings',
     href: '/admin',
     icon: <CalendarListIcon className="size-5" />,
+  },
+  {
+    key: 'enquiries',
+    label: 'Enquiries',
+    href: '/admin-dashboard/enquiries',
+    icon: <InboxIcon className="size-5" />,
+  },
+  {
+    key: 'subscriptions',
+    label: 'Subscriptions',
+    href: '/admin-dashboard/subscriptions',
+    icon: <BadgeIcon className="size-5" />,
   },
   {
     key: 'payments',
@@ -111,7 +125,7 @@ export function AdminLayout({ children, title, currentNav }: AdminLayoutProps) {
     );
   }
 
-  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : pathname.includes('/account') ? 'account' : pathname.includes('/payments') ? 'payments' : 'bookings');
+  const activeNav = currentNav ?? (pathname === '/admin-dashboard' ? 'dashboard' : pathname.includes('/account') ? 'account' : pathname.includes('/enquiries') ? 'enquiries' : pathname.includes('/subscriptions') ? 'subscriptions' : pathname.includes('/payment-links') ? 'payment-links' : pathname.includes('/payments') ? 'payments' : 'bookings');
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100">
@@ -295,6 +309,24 @@ function LinkIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+function InboxIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </svg>
+  );
+}
+
+function BadgeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z" />
+      <path d="m9 12 2 2 4-4" />
     </svg>
   );
 }

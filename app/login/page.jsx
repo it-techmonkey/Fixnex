@@ -7,10 +7,13 @@ import { GoogleLogin } from "@react-oauth/google";
 import Header from "../components/layout/Header";
 import PasswordInput from "../components/common/PasswordInput";
 import Footer from "../components/layout/Footer";
+import { safeRedirect } from "@/lib/safeRedirect";
 
 const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+  const redirectUrl = safeRedirect(redirectParam);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,7 +50,6 @@ const LoginForm = () => {
       if (data.user?.role === "ADMIN") {
         router.push("/admin-dashboard");
       } else {
-        const redirectUrl = searchParams.get("redirect") || "/";
         router.push(redirectUrl);
       }
     } catch (err) {
@@ -77,7 +79,6 @@ const LoginForm = () => {
       if (data.user?.role === "ADMIN") {
         router.push("/admin-dashboard");
       } else {
-        const redirectUrl = searchParams.get("redirect") || "/";
         router.push(redirectUrl);
       }
     } catch (err) {
@@ -168,7 +169,10 @@ const LoginForm = () => {
 
         <p className="text-center text-sm text-white/65 mt-6">
           New to FixNex?{' '}
-          <Link href="/signup" className="text-blue-400 transition hover:text-blue-300">
+          <Link
+            href={redirectParam ? `/signup?redirect=${encodeURIComponent(redirectUrl)}` : "/signup"}
+            className="text-blue-400 transition hover:text-blue-300"
+          >
             Create an account
           </Link>
         </p>

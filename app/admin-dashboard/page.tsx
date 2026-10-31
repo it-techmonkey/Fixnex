@@ -15,6 +15,8 @@ type DashboardTotals = {
   cancelledBookings: number;
   newBookingsLast30Days: number;
   uniqueCustomers: number;
+  newEnquiries?: number;
+  activeMembers?: number;
 };
 
 type DashboardResponse = {
@@ -136,6 +138,30 @@ const AdminDashboardPage = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Plans: enquiries waiting for a reply and active members */}
+        {!loading && data && (
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Link
+              href="/admin-dashboard/enquiries"
+              className={`rounded-2xl border p-5 transition hover:border-sky-500/40 ${
+                (data.totals.newEnquiries ?? 0) > 0 ? "border-amber-500/40 bg-amber-500/5" : "border-slate-800/80 bg-slate-900/50"
+              }`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">New enquiries</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-white sm:text-3xl">{data.totals.newEnquiries ?? 0}</p>
+              <p className="mt-1 text-xs text-slate-400">Plan enquiries and quote requests waiting for a reply</p>
+            </Link>
+            <Link
+              href="/admin-dashboard/subscriptions"
+              className="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-5 transition hover:border-sky-500/40"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Active members</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-white sm:text-3xl">{data.totals.activeMembers ?? 0}</p>
+              <p className="mt-1 text-xs text-slate-400">Customers with an active FixLite, FixPro or FixMax plan</p>
+            </Link>
+          </section>
         )}
 
         {/* Stats grid */}

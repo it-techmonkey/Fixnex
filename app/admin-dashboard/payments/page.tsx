@@ -6,6 +6,7 @@ import { AdminLayout } from "@/app/components/admin/AdminLayout";
 type PaymentUser = { id: string; name: string; email: string; isGuest?: boolean };
 type Payment = {
   id: string;
+  order_code: string;
   transaction_id: string;
   tracking_id: string;
   amount: string;
@@ -76,6 +77,7 @@ export default function PaymentsPage() {
               <thead className="bg-slate-800/50 text-xs uppercase text-slate-400">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-semibold">Date</th>
+                  <th scope="col" className="px-6 py-4 font-semibold">Order ID</th>
                   <th scope="col" className="px-6 py-4 font-semibold">User Info</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Amount</th>
                   <th scope="col" className="px-6 py-4 font-semibold">Status</th>
@@ -85,13 +87,13 @@ export default function PaymentsPage() {
               <tbody className="divide-y divide-slate-800/80">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                       <div className="flex justify-center"><div className="size-6 animate-spin rounded-full border-2 border-sky-500/30 border-t-sky-400" /></div>
                     </td>
                   </tr>
                 ) : payments.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
                       No payments found.
                     </td>
                   </tr>
@@ -100,6 +102,9 @@ export default function PaymentsPage() {
                     <tr key={payment.id} className="transition-colors hover:bg-slate-800/30">
                       <td className="whitespace-nowrap px-6 py-4">
                         {new Date(payment.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-white">
+                        {payment.order_code}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-medium text-white flex items-center gap-2">
@@ -225,6 +230,11 @@ export default function PaymentsPage() {
                 {/* CCAvenue Reference block */}
                 <div className="rounded-2xl bg-slate-900/80 p-4 ring-1 ring-inset ring-slate-800">
                   <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">Order ID</span>
+                      <span className="font-mono text-sm text-slate-300 break-all">{selectedPayment.order_code}</span>
+                    </div>
+                    <div className="h-px w-full bg-slate-800/80" />
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                       <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">CCAvenue Reference</span>
                       <span className="font-mono text-sm text-slate-300 break-all">{selectedPayment.tracking_id}</span>

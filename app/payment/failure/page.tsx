@@ -8,6 +8,7 @@ import Footer from "@/app/components/layout/Footer";
 const PaymentFailureContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const isPlan = searchParams.get("type") === "plan";
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center text-white space-y-6 px-4">
@@ -30,8 +31,9 @@ const PaymentFailureContent = () => {
           Payment Failed
         </h1>
         <p className="text-white/70 text-sm sm:text-base">
-          Your payment was not completed. No booking has been created and you have not been charged.
-          Your cart items are still saved — you can try again.
+          {isPlan
+            ? "Your payment was not completed, so your plan has not been changed and you have not been charged. You can try again."
+            : "Your payment was not completed. No booking has been created and you have not been charged. Your cart items are still saved — you can try again."}
         </p>
         {orderId && (
           <p className="text-white/40 text-xs font-mono">
@@ -42,7 +44,7 @@ const PaymentFailureContent = () => {
 
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <a
-          href="/cart"
+          href={isPlan ? "/my-plan" : "/cart"}
           className="px-6 py-3 text-sm sm:text-base bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-semibold font-['Space_Grotesk'] transition-all duration-300 hover:scale-105 shadow-lg shadow-blue-500/30"
         >
           Try Again

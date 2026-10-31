@@ -187,6 +187,9 @@ const Header = () => {
               <div className="size-6 animate-pulse rounded-full bg-white/40" aria-hidden />
             ) : session.isAuthenticated ? (
               <>
+              <Link href="/my-plan" className="text-white/90 transition-opacity hover:opacity-100">
+                My Plan
+              </Link>
               <Link
                 href="/account"
                 aria-label="My account"
@@ -329,6 +332,13 @@ const Header = () => {
             <div className="h-12 w-full animate-pulse rounded-lg bg-white/20" aria-hidden />
           ) : session.isAuthenticated ? (
             <>
+            <Link
+              href="/my-plan"
+              className="rounded-lg border border-white/20 py-3 text-center text-sm transition hover:bg-white/10"
+              onClick={closeMenu}
+            >
+              My Plan
+            </Link>
             <Link
               href="/account"
               className="rounded-lg border border-white/20 py-3 text-center text-sm transition hover:bg-white/10"
